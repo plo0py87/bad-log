@@ -10,9 +10,6 @@ import NotFoundPage from './pages/NotFoundPage';
 import AdminPage from './pages/AdminPage';
 import { enableLocalMode, checkFirebaseConnection } from './services/blogService';
 
-// 獲取 base URL
-const baseUrl = import.meta.env.BASE_URL;
-
 const router = createBrowserRouter([
   {
     path: '/',
@@ -42,9 +39,7 @@ const router = createBrowserRouter([
     path: '*',
     element: <Layout><NotFoundPage /></Layout>,
   },
-], {
-  basename: baseUrl, // 設置基本路徑
-});
+]);
 
 function App() {
   // 在應用載入時檢查 Firebase 連接，如果失敗則啟用本地模式
@@ -63,6 +58,9 @@ function App() {
     };
 
     checkConnection();
+
+    // 無論如何都啟用本地模式，確保應用可用
+    enableLocalMode();
     console.log('強制啟用本地模式，確保應用可用');
   }, []);
 
