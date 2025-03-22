@@ -59,10 +59,6 @@ function App() {
     };
 
     checkConnection();
-
-    // 無論如何都啟用本地模式，確保應用可用
-    enableLocalMode();
-    console.log('強制啟用本地模式，確保應用可用');
   }, []);
 
   return (
