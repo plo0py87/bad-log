@@ -1,4 +1,4 @@
-import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+import { RouterProvider, createHashRouter } from 'react-router-dom';
 import { useEffect } from 'react';
 import Layout from './components/layout/Layout';
 import HomePage from './pages/HomePage';
@@ -10,7 +10,8 @@ import NotFoundPage from './pages/NotFoundPage';
 import AdminPage from './pages/AdminPage';
 import { enableLocalMode, checkFirebaseConnection } from './services/blogService';
 
-const router = createBrowserRouter([
+// 使用 HashRouter 而非 BrowserRouter，以解決靜態部署中的路由問題
+const router = createHashRouter([
   {
     path: '/',
     element: <Layout><HomePage /></Layout>,
