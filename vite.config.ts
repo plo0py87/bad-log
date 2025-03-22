@@ -5,5 +5,5 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   // 确保在生產環境中正確處理路徑
-  base: '/',
+  base: './',
 })
