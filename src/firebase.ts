@@ -11,7 +11,7 @@ import { getAuth } from "firebase/auth";
 // 3. 註冊一個 Web 應用
 // 4. 複製配置對象並替換下方的值
 const firebaseConfig = {
-  apiKey: "AIzaSyBbxrZWGUfnS1y9veXPoiWc9Tzr0gWIRb8",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: "bad-log.firebaseapp.com",
   projectId: "bad-log",
   storageBucket: "bad-log.firebasestorage.app",
