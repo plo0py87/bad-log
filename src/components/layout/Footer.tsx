@@ -10,7 +10,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           <div>
             <div className="flex flex-col items-center md:items-start">
-              <h2 className="text-xl font-light mb-2 text-white tracking-widest kuchiki-title">朽木</h2>
+              <h2 className="text-xl font-light mb-2 text-white tracking-widest kuchiki-title">Bad Log</h2>
               <div className="h-px w-12 bg-gradient-to-r from-transparent via-gray-800 to-transparent mb-4"></div>
               <p className="text-white font-light text-sm tracking-wider">
                 將技術與知識作為自然的一部分分享
@@ -52,7 +52,7 @@ export default function Footer() {
 
           <div>
             <div className="flex flex-col items-center md:items-start">
-              <h2 className="text-lg font-light mb-2 text-white tracking-widest">連接</h2>
+              <h2 className="text-lg font-light mb-2 text-white tracking-widest">聯絡</h2>
               <div className="h-px w-12 bg-gradient-to-r from-transparent via-gray-800 to-transparent mb-4"></div>
               <div className="flex space-x-6 justify-center md:justify-start">
                 <a
@@ -90,11 +90,11 @@ export default function Footer() {
         <div className="mt-16 pt-8 text-center border-t border-gray-900">
           <div className="flex flex-col items-center">
             <p className="text-white opacity-60 text-xs font-light tracking-wider">
-              &copy; {currentYear} 朽木. 版權所有.
+              &copy; {currentYear} Bad Log. 版權所有.
             </p>
             <div className="h-px w-8 bg-gradient-to-r from-transparent via-gray-800 to-transparent mt-4 mb-4"></div>
             <p className="text-white opacity-40 text-xs font-light italic">
-              "古老朽木中孕育新知識"
+              "摧枯拉朽"
             </p>
           </div>
         </div>

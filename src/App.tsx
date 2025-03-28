@@ -6,9 +6,12 @@ import BlogPage from './pages/BlogPage';
 import BlogDetailPage from './pages/BlogDetailPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
+import GalleryPage from './pages/GalleryPage';
 import NotFoundPage from './pages/NotFoundPage';
 import AdminPage from './pages/AdminPage';
+
 import { enableLocalMode, checkFirebaseConnection } from './services/blogService';
+
 
 // 使用 HashRouter 而非 BrowserRouter，以解決靜態部署中的路由問題
 const router = createHashRouter([
@@ -29,8 +32,8 @@ const router = createHashRouter([
     element: <Layout><AboutPage /></Layout>,
   },
   {
-    path: '/contact',
-    element: <Layout><ContactPage /></Layout>,
+    path: '/gallery',
+    element: <Layout><GalleryPage /></Layout>,
   },
   {
     path: '/admin',

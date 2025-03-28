@@ -16,23 +16,22 @@ export default function HomePage() {
         <div className="absolute inset-0">
           <img
             className="w-full h-full object-cover opacity-40"
-            src="https://images.unsplash.com/photo-1598367172452-7f549a2a2205?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80"
+            src="https://i.pinimg.com/736x/da/34/97/da3497f9b65eb16722fc43662472a981.jpg"
             alt="森林中的古老樹木"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black via-transparent to-black" />
         </div>
-        <div className="relative max-w-7xl mx-auto py-24 px-4 sm:py-32 sm:px-6 lg:px-8">
+        <div className="relative max-w-7xl mx-auto py-16 px-4 sm:py-16 sm:px-6 lg:px-8">
           <div className="text-center">
-            <FaLeaf className="inline-block mb-4 text-4xl opacity-60 text-white" />
             <div className="h-px w-24 bg-gradient-to-r from-transparent via-white to-transparent mx-auto mb-6"></div>
             <h1 className="text-4xl font-light tracking-wider text-white sm:text-5xl lg:text-6xl kuchiki-title mb-6">
-              朽木
+              Bad Log
             </h1>
             <div className="h-px w-24 bg-gradient-to-r from-transparent via-white to-transparent mx-auto mb-6"></div>
             <p className="mt-6 max-w-3xl mx-auto text-xl text-white font-light">
-              將技術與知識作為自然的一部分分享
+            Bad Log，簡寫就是blog，歡迎來到我的blog
               <br />
-              <span className="text-sm opacity-75">分享技術與知識，如同自然的一部分</span>
+              <span className="text-sm opacity-75">分享生活、想法、興趣</span>
             </p>
           </div>
         </div>
