@@ -7,10 +7,6 @@ interface BlogCardProps {
   title: string;
   excerpt: string;
   publishedDate: string | Date;
-  author: {
-    name: string;
-    avatar?: string;
-  };
   coverImage?: string;
   category?: string;
 }
@@ -20,7 +16,6 @@ export default function BlogCard({
   title,
   excerpt,
   publishedDate,
-  author,
   coverImage,
   category
 }: BlogCardProps) {
@@ -58,23 +53,6 @@ export default function BlogCard({
         </p>
 
         <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            {author.avatar ? (
-              <img
-                src={author.avatar}
-                alt={author.name}
-                className="w-8 h-8 rounded-none grayscale mr-2 border border-gray-800"
-              />
-            ) : (
-              <div className="w-8 h-8 bg-black border border-gray-800 flex items-center justify-center mr-2">
-                <span className="text-white font-light text-sm">
-                  {author.name.charAt(0)}
-                </span>
-              </div>
-            )}
-            <span className="text-sm text-white font-light">{author.name}</span>
-          </div>
-
           <span className="text-sm text-white opacity-60 font-light">{formattedDate}</span>
         </div>
       </div>

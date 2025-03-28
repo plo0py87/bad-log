@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { addPost, getAllPosts, deletePost, initializeFirebaseData, getAllAuthors } from '../services/blogService';
-import { BlogPost, Author } from '../types/blog';
+import { BlogPost} from '../types/blog';
 import { FaLeaf, FaPlus, FaTrash, FaEdit } from 'react-icons/fa';
 import { marked } from 'marked';
 
@@ -8,7 +8,6 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [authors, setAuthors] = useState<Author[]>([]);
 
   // 管理新增和編輯文章的表單
   const [isAddingPost, setIsAddingPost] = useState(false);
@@ -23,7 +22,6 @@ export default function AdminPage() {
     excerpt: '',
     content: '',
     publishedDate: new Date(),
-    author: { id: '', name: '' },
     category: '',
     tags: []
   });
@@ -45,9 +43,6 @@ export default function AdminPage() {
         setPosts(fetchedPosts);
 
         // 獲取所有作者
-        const fetchedAuthors = await getAllAuthors();
-        setAuthors(fetchedAuthors);
-
         setLoading(false);
       } catch (err) {
         setError('加載數據時發生錯誤');
@@ -62,13 +57,6 @@ export default function AdminPage() {
   // 處理表單輸入變更
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-
-    if (name === 'authorId') {
-      const selectedAuthor = authors.find(author => author.id === value);
-      setFormData(prev => ({ ...prev, author: selectedAuthor || { id: '', name: '' } }));
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
-    }
   };
 
   // 處理標籤添加
@@ -123,7 +111,6 @@ export default function AdminPage() {
           excerpt: '',
           content: '',
           publishedDate: new Date(),
-          author: { id: '', name: '' },
           category: '',
           tags: []
         });
@@ -210,26 +197,6 @@ export default function AdminPage() {
           rows={3}
           required
         />
-      </div>
-
-      <div>
-        <label className="block text-sm font-light text-white mb-1 tracking-wider">
-          選擇作者
-        </label>
-        <select
-          name="authorId"
-          value={formData.author?.id || ''}
-          onChange={handleInputChange}
-          className="kuchiki-input w-full"
-          required
-        >
-          <option value="">選擇作者</option>
-          {authors.map(author => (
-            <option key={author.id} value={author.id}>
-              {author.name}
-            </option>
-          ))}
-        </select>
       </div>
 
       <div>
@@ -442,9 +409,6 @@ export default function AdminPage() {
                         <tr key={post.id} className="hover:bg-gray-800 transition-colors duration-150">
                           <td className="py-3 px-4 text-sm text-white">
                             {post.title}
-                          </td>
-                          <td className="py-3 px-4 text-sm text-white">
-                            {post.author.name}
                           </td>
                           <td className="py-3 px-4 text-sm text-white">
                             {post.category || '-'}

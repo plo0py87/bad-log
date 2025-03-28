@@ -1,10 +1,3 @@
-export interface Author {
-  id: string;
-  name: string;
-  avatar?: string;
-  bio?: string;
-}
-
 export interface BlogPost {
   id: string;
   title: string;
@@ -12,7 +5,6 @@ export interface BlogPost {
   excerpt: string;
   content: string;
   publishedDate: string | Date;
-  author: Author;
   coverImage?: string;
   category?: string;
   tags?: string[];
