@@ -15,7 +15,7 @@ import {
   FieldValue
 } from 'firebase/firestore';
 import { db } from '../firebase';
-import { BlogPost, Author } from '../types/blog';
+import { BlogPost} from '../types/blog';
 import { getDownloadURL, getStorage, ref, uploadBytes } from 'firebase/storage';
 
 // 整合本地數據和 Firebase 數據
@@ -57,7 +57,6 @@ const convertFirestoreDocToPost = (doc: DocumentData): BlogPost => {
     excerpt: data.excerpt || '',
     content: data.content || '',
     publishedDate: data.publishedDate ? data.publishedDate.toDate() : new Date(),
-    author: data.author || {},
     coverImage: data.coverImage || '',
     category: data.category || '',
     tags: data.tags || []
@@ -229,55 +228,8 @@ export const getPostsByCategory = async (category: string): Promise<BlogPost[]> 
 // 關於作者的服務
 
 // 獲取所有作者
-export const getAllAuthors = async (): Promise<Author[]> => {
-  // 如果使用本地模式，從本地文章中提取作者
-  if (useLocalMode) {
-    const uniqueAuthors = new Map<string, Author>();
-    localBlogPosts.forEach(post => {
-      if (post.author && !uniqueAuthors.has(post.author.id)) {
-        uniqueAuthors.set(post.author.id, post.author);
-      }
-    });
-    return Array.from(uniqueAuthors.values());
-  }
-
-  try {
-    const authorsSnapshot = await getDocs(collection(db, AUTHORS_COLLECTION));
-    return authorsSnapshot.docs.map(doc => ({
-      id: doc.id,
-      name: doc.data().name,
-      avatar: doc.data().avatar,
-      bio: doc.data().bio
-    }));
-  } catch (error) {
-    console.error('Error getting authors:', error);
-    // 出錯時從本地文章中提取作者
-    const uniqueAuthors = new Map<string, Author>();
-    localBlogPosts.forEach(post => {
-      if (post.author && !uniqueAuthors.has(post.author.id)) {
-        uniqueAuthors.set(post.author.id, post.author);
-      }
-    });
-    return Array.from(uniqueAuthors.values());
-  }
-};
 
 // 添加新作者
-export const addAuthor = async (author: Omit<Author, 'id'>): Promise<string | null> => {
-  // 如果使用本地模式，模擬添加
-  if (useLocalMode) {
-    console.log('本地模式：模擬添加作者', author);
-    return 'local-author-' + Date.now();
-  }
-
-  try {
-    const docRef = await addDoc(collection(db, AUTHORS_COLLECTION), author);
-    return docRef.id;
-  } catch (error) {
-    console.error('Error adding author:', error);
-    return null;
-  }
-};
 
 // 初始化 Firebase 數據庫
 export const initializeFirebaseData = async (): Promise<void> => {
@@ -296,27 +248,6 @@ export const initializeFirebaseData = async (): Promise<void> => {
     // 如果沒有文章，則導入本地數據
     if (existingPosts.length === 0) {
       console.log('Importing local blog posts to Firebase...');
-
-      // 先添加作者
-      const authorMap = new Map();
-
-      for (const post of localBlogPosts) {
-        // 檢查作者是否已被添加
-        if (!authorMap.has(post.author.id)) {
-          const authorId = await addAuthor(post.author);
-          if (authorId) {
-            authorMap.set(post.author.id, { ...post.author, id: authorId });
-          }
-        }
-
-        // 添加文章，連結到新的作者 ID
-        const author = authorMap.get(post.author.id) || post.author;
-
-        await addPost({
-          ...post,
-          author
-        });
-      }
 
       console.log('Local blog posts imported successfully!');
     }

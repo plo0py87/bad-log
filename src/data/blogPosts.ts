@@ -76,12 +76,6 @@ React has evolved over the years, and there are several modern patterns worth le
 React continues to evolve, but the core concepts remain the same. By understanding components, hooks, and modern patterns, you'll be well on your way to building great applications with React in 2024.
     `,
     publishedDate: new Date('2024-01-15'),
-    author: {
-      id: '1',
-      name: 'Sarah Johnson',
-      avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-      bio: 'Frontend Developer | React Enthusiast'
-    },
     coverImage: 'https://images.unsplash.com/photo-1633356122102-3fe601e05bd2?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
     category: 'React',
     tags: ['React', 'JavaScript', 'Web Development']
@@ -189,12 +183,6 @@ function UserProfile() {
 TypeScript adds a valuable layer of type safety to React applications. While there is a learning curve, the benefits in terms of code quality and developer experience make it well worth the investment.
     `,
     publishedDate: new Date('2024-02-02'),
-    author: {
-      id: '2',
-      name: 'Michael Chen',
-      avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-      bio: 'Full Stack Developer | TypeScript Advocate'
-    },
     coverImage: 'https://images.unsplash.com/photo-1610986603166-f78428624e76?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
     category: 'TypeScript',
     tags: ['TypeScript', 'React', 'JavaScript']
@@ -341,12 +329,6 @@ Once your blog is ready, you can deploy it to platforms like Vercel, Netlify, or
 Building a blog with React and Tailwind CSS is a rewarding project that showcases the power and flexibility of these technologies. By following this guide, you now have a foundation for creating your own customized blog.
     `,
     publishedDate: new Date('2024-02-20'),
-    author: {
-      id: '3',
-      name: 'Emily Rodriguez',
-      avatar: 'https://randomuser.me/api/portraits/women/23.jpg',
-      bio: 'UI/UX Designer & Developer'
-    },
     coverImage: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
     category: 'Web Design',
     tags: ['React', 'Tailwind CSS', 'Web Development', 'Design']
@@ -545,12 +527,6 @@ Here's a guide to help you choose:
 State management in React has evolved significantly over the years. The best approach depends on your specific requirements, team familiarity, and project size. Remember that simpler solutions are often better until proven otherwise.
     `,
     publishedDate: new Date('2024-03-05'),
-    author: {
-      id: '4',
-      name: 'Alex Turner',
-      avatar: 'https://randomuser.me/api/portraits/men/78.jpg',
-      bio: 'Senior React Developer | State Management Specialist'
-    },
     coverImage: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
     category: 'React',
     tags: ['React', 'State Management', 'Redux', 'Context API']
@@ -719,12 +695,6 @@ Ensure sufficient color contrast for text and interactive elements:
 Building accessible applications is not just the right thing to do—it's essential for creating truly inclusive digital experiences. By incorporating these practices into your development workflow, you'll ensure that your React applications can be used by the widest possible audience.
     `,
     publishedDate: new Date('2024-03-15'),
-    author: {
-      id: '5',
-      name: 'Jessica Park',
-      avatar: 'https://randomuser.me/api/portraits/women/65.jpg',
-      bio: 'Accessibility Specialist | Frontend Developer'
-    },
     coverImage: 'https://images.unsplash.com/photo-1599059813005-11265ba4b4ce?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
     category: 'Accessibility',
     tags: ['Accessibility', 'React', 'Web Development', 'UX']

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { addPost, getAllPosts, deletePost, initializeFirebaseData, getAllAuthors } from '../services/blogService';
+import { addPost, getAllPosts, deletePost, initializeFirebaseData,} from '../services/blogService';
 import { BlogPost} from '../types/blog';
 import { FaLeaf, FaPlus, FaTrash, FaEdit } from 'react-icons/fa';
 import { marked } from 'marked';

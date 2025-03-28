@@ -125,7 +125,6 @@ export default function BlogDetailPage() {
                 title={relatedPost.title}
                 excerpt={relatedPost.excerpt}
                 publishedDate={relatedPost.publishedDate}
-                author={relatedPost.author}
                 coverImage={relatedPost.coverImage}
                 category={relatedPost.category}
               />

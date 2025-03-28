@@ -24,7 +24,6 @@ export default function BlogList({ posts }: BlogListProps) {
           title={post.title}
           excerpt={post.excerpt}
           publishedDate={post.publishedDate}
-          author={post.author}
           coverImage={post.coverImage}
           category={post.category}
         />

@@ -77,21 +77,7 @@ export default function HomePage() {
             </p>
 
             <div className="mt-6 flex items-center">
-              {featuredPost.author.avatar ? (
-                <img
-                  className="h-10 w-10 rounded-none grayscale mr-3 border border-gray-800"
-                  src={featuredPost.author.avatar}
-                  alt={featuredPost.author.name}
-                />
-              ) : (
-                <div className="h-10 w-10 bg-black border border-gray-800 flex items-center justify-center mr-3">
-                  <span className="text-white font-light">
-                    {featuredPost.author.name.charAt(0)}
-                  </span>
-                </div>
-              )}
               <div>
-                <p className="text-sm font-light text-white">{featuredPost.author.name}</p>
                 <p className="text-sm text-white opacity-60">
                   {typeof featuredPost.publishedDate === 'string'
                     ? featuredPost.publishedDate
