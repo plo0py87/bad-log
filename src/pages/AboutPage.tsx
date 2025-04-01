@@ -101,7 +101,7 @@ export default function AboutPage() {
                     每個人剛出生時都是這個世界上的一塊朽木，一無所知，卻都有著自己的特點和價值，等待著被雕琢。
                   </p>
                   <p className="text-white font-light">
-                    透過這個平台，記錄自己雕琢自己的過程，記錄下我的嘗試和努力，
+                    透過這個平台，記錄下我的嘗試和努力，
                     直到我打臉孔子，變成最強的木頭。
                   </p>
                 </div>
@@ -112,7 +112,7 @@ export default function AboutPage() {
             <div className="mt-20">
               <h2 className="text-3xl font-light text-white mb-10 text-center tracking-wider kuchiki-title kuchiki-border">我們的價值觀</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="bg-gray-900 bg-opacity-60 p-6 border border-gray-800 kuchiki-card">
+              <div className="bg-gray-900 bg-opacity-60 p-6 border border-gray-800 kuchiki-card">
                   <div className="w-12 h-12 border border-gray-800 rounded-none flex items-center justify-center mb-4">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -125,14 +125,22 @@ export default function AboutPage() {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={1}
-                        d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1}
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                       />
                     </svg>
                   </div>
-                  <h3 className="text-xl font-light text-white mb-2 tracking-wider">優質內容</h3>
+                  <h3 className="text-xl font-light text-white mb-2 tracking-wider">總瀏覽次數</h3>
+                  <div className="flex items-center justify-center mb-3">
+                    <span className="text-2xl font-light text-white tracking-wider">9,842</span>
+                  </div>
                   <p className="text-white opacity-80 font-light">
-                    我們致力於創建全面、經過深入研究的內容，為讀者提供真正的價值。
-                    每篇文章都經過仔細的審核過程，以確保準確性和清晰度。
+  
                   </p>
                 </div>
 
@@ -196,13 +204,10 @@ export default function AboutPage() {
                 <h2 className="text-3xl font-light text-white mb-6 tracking-wider kuchiki-title">Me</h2>
                 <div className="prose prose-invert max-w-none">
                   <p className="text-white font-light">
-                    你好，我是 Plo0py，一位熱愛寫程式和分享知識的開發者。我對技術充滿熱情，
-                    特別是在前端開發和用戶體驗設計方面。當我不在寫程式的時候，你可能會發現我在閱讀、
-                    寫作或是探索大自然。
+                    你好，我是陳興彥，這個網站的創建者和主要作者。
                   </p>
                   <p className="text-white font-light">
-                    我相信知識應該被自由分享，這也是我創建這個平台的原因之一。
-                    通過這個部落格，我希望能夠記錄自己的學習歷程，並且幫助其他人避開我曾經遇到過的陷阱。
+                  我目前就讀台大醫工系一年級，INFJ，喜歡寫程式、科技、音樂、打球、心理學。
                   </p>
                 </div>
               
@@ -225,7 +230,7 @@ export default function AboutPage() {
                 </div>
                 <div className="ml-3">
                   <h3 className="text-lg font-light text-white tracking-wider">電子郵件</h3>
-                  <p className="text-white opacity-70">contact@reactblog.com</p>
+                  <p className="text-white opacity-70">ploopy0408@gmail.com</p>
                 </div>
               </div>
 
@@ -249,11 +254,11 @@ export default function AboutPage() {
                 <div className="ml-3">
                   <h3 className="text-lg font-light text-white tracking-wider">社群媒體</h3>
                   <div className="flex space-x-4 mt-2">
-                    <a href="#" className="text-white opacity-80 hover:text-white transition-colors duration-300">
-                      <span className="sr-only">Twitter</span>
-                      <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
-                      </svg>
+                    <a href="https://www.instagram.com/plo0py87/" className="text-white opacity-80 hover:text-white transition-colors duration-300">
+                      <span className="sr-only">Instagram</span>
+                        <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+                        </svg>
                     </a>
                     <a href="#" className="text-white opacity-80 hover:text-white transition-colors duration-300">
                       <span className="sr-only">GitHub</span>
@@ -276,9 +281,9 @@ export default function AboutPage() {
               <div className="relative flex items-center justify-center">
                 <div className="w-4/5">
                   <img
-                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
-                    alt="個人照片"
-                    className="border border-gray-800 grayscale contrast-125 w-full"
+                  src="public/profile.jpg"
+                  alt="個人照片"
+                  className="border border-gray-800 grayscale contrast-125 w-full"
                   />
                 </div>
               </div>

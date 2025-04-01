@@ -1,0 +1,57 @@
+.flip-counter {
+  display: flex;
+  justify-content: center;
+  perspective: 500px;
+  font-variant-numeric: tabular-nums;
+}
+
+.flip-digit {
+  position: relative;
+  width: 30px;
+  height: 50px;
+  margin: 0 2px;
+  background-color: #1f2937;
+  border: 1px solid #4b5563;
+  border-radius: 4px;
+  font-size: 32px;
+  line-height: 50px;
+  color: white;
+  font-weight: 300;
+  overflow: hidden;
+}
+
+.flip-digit-current,
+.flip-digit-next {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  backface-visibility: hidden;
+}
+
+.flip-digit-next {
+  transform: rotateX(-180deg);
+}
+
+.flip-digit.flipping .flip-digit-current {
+  animation: flipTop 0.6s ease-in;
+  transform-origin: bottom center;
+}
+
+.flip-digit.flipping .flip-digit-next {
+  animation: flipBottom 0.6s ease-out;
+  transform-origin: top center;
+}
+
+@keyframes flipTop {
+  0% { transform: rotateX(0deg); }
+  100% { transform: rotateX(90deg); }
+}
+
+@keyframes flipBottom {
+  0% { transform: rotateX(-180deg); }
+  50% { transform: rotateX(-90deg); }
+  100% { transform: rotateX(0deg); }
+}

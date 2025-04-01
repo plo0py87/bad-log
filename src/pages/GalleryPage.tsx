@@ -1,45 +1,123 @@
 import { useState } from 'react';
-import { FaLeaf } from 'react-icons/fa';
+import { FiMaximize2, FiX, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+
+// Gallery item type definition
+interface GalleryItem {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  category: string;
+  date: string;
+}
+
+// Mock data for the gallery
+const galleryItems: GalleryItem[] = [
+  {
+    id: '1',
+    title: '森林中的晨光',
+    description: '清晨陽光穿過樹葉的瞬間',
+    imageUrl: 'https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1953&q=80',
+    category: '自然',
+    date: '2025-02-15'
+  },
+  {
+    id: '2',
+    title: '城市夜景',
+    description: '現代城市的燈光與建築之美',
+    imageUrl: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80',
+    category: '城市',
+    date: '2025-02-10'
+  },
+  {
+    id: '3',
+    title: '溪流之聲',
+    description: '山間小溪流動的寧靜景象',
+    imageUrl: 'https://images.unsplash.com/photo-1444703686981-a3abbc4d4fe3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80',
+    category: '自然',
+    date: '2025-01-27'
+  },
+  {
+    id: '4',
+    title: '極光之舞',
+    description: '北極夜空中的光芒舞動',
+    imageUrl: 'https://images.unsplash.com/photo-1483347756197-71ef80e95f73?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80',
+    category: '天空',
+    date: '2025-01-15'
+  },
+  {
+    id: '5',
+    title: '舊城區街道',
+    description: '古老街道中的文化痕跡',
+    imageUrl: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80',
+    category: '城市',
+    date: '2025-01-05'
+  },
+  {
+    id: '6',
+    title: '秋季風景',
+    description: '紅葉與金黃色的秋天美景',
+    imageUrl: 'https://images.unsplash.com/photo-1477414348463-c0eb7f1359b6?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80',
+    category: '自然',
+    date: '2024-12-30'
+  },
+  {
+    id: '7',
+    title: '冬日湖景',
+    description: '被冰雪覆蓋的寧靜湖泊',
+    imageUrl: 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1952&q=80',
+    category: '自然',
+    date: '2024-12-18'
+  },
+  {
+    id: '8',
+    title: '建築幾何學',
+    description: '現代建築的幾何形狀與線條',
+    imageUrl: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80',
+    category: '建築',
+    date: '2024-12-05'
+  },
+  {
+    id: '9',
+    title: '海洋日落',
+    description: '落日餘暉映照在海面上的美景',
+    imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1953&q=80',
+    category: '自然',
+    date: '2024-11-20'
+  }
+];
+
+// Get unique categories
+const categories = ['全部', ...Array.from(new Set(galleryItems.map(item => item.category)))];
 
 export default function GalleryPage() {
-  const [formState, setFormState] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: ''
+  const [selectedCategory, setSelectedCategory] = useState('全部');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeImage, setActiveImage] = useState<GalleryItem | null>(null);
+  
+  // Filter gallery items based on category and search query
+  const filteredItems = galleryItems.filter(item => {
+    const matchesCategory = selectedCategory === '全部' || item.category === selectedCategory;
+    const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         item.description.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
   });
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormState(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setError(null);
-
-    // Simulate form submission
-    setTimeout(() => {
-      // In a real application, this would be an API call
-      console.log('Form submitted:', formState);
-      setIsSubmitting(false);
-      setIsSubmitted(true);
-      // Reset form
-      setFormState({
-        name: '',
-        email: '',
-        subject: '',
-        message: ''
-      });
-    }, 1000);
+  // Handle modal navigation
+  const navigateModal = (direction: 'prev' | 'next') => {
+    if (!activeImage) return;
+    
+    const currentIndex = filteredItems.findIndex(item => item.id === activeImage.id);
+    if (currentIndex === -1) return;
+    
+    let newIndex;
+    if (direction === 'prev') {
+      newIndex = currentIndex === 0 ? filteredItems.length - 1 : currentIndex - 1;
+    } else {
+      newIndex = currentIndex === filteredItems.length - 1 ? 0 : currentIndex + 1;
+    }
+    
+    setActiveImage(filteredItems[newIndex]);
   };
 
   return (
@@ -49,7 +127,7 @@ export default function GalleryPage() {
         <div className="absolute inset-0">
           <img
             className="w-full h-full object-cover opacity-30"
-            src="https://images.unsplash.com/photo-1596524430615-b46475ddff6e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80"
+            src="https://i.pinimg.com/736x/66/cc/7e/66cc7e666f8ff176841f70162607048e.jpg"
             alt="森林中的光線"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black via-transparent to-black" />
@@ -59,235 +137,137 @@ export default function GalleryPage() {
             <div className="h-px w-24 bg-gradient-to-r from-transparent via-white to-transparent mx-auto mb-6"></div>
             <h1 className="text-4xl font-light tracking-wider text-white sm:text-5xl lg:text-6xl kuchiki-title">作品</h1>
             <div className="h-px w-24 bg-gradient-to-r from-transparent via-white to-transparent mx-auto mt-6 mb-6"></div>
-            <p className="mt-6 max-w-3xl mx-auto text-xl text-white font-light">
-              有問題或意見？我們很樂意聽取您的想法。
+            <p className="mt-6 max-w-3xl mx-auto text-sm text-white font-light opacity-75">
+              精雕細琢
             </p>
           </div>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-          {/* Contact Information */}
-          <div>
-            <h2 className="text-3xl font-light text-white mb-6 tracking-wider kuchiki-title">與我們聯繫</h2>
-            <p className="text-lg text-white opacity-80 mb-8 font-light">
-              無論您對我們的內容有疑問，想要成為特約作者，或者只是想打聲招呼，我們都隨時在此為您提供幫助。
-            </p>
-
-            <div className="space-y-6">
-              <div className="flex items-start">
-                <div className="flex-shrink-0">
-                  <svg
-                    className="h-6 w-6 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1}
-                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                    />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <h3 className="text-lg font-light text-white tracking-wider">電子郵件</h3>
-                  <p className="text-white opacity-70">contact@reactblog.com</p>
-                </div>
-              </div>
-
-              <div className="flex items-start">
-                <div className="flex-shrink-0">
-                  <svg
-                    className="h-6 w-6 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1}
-                      d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"
-                    />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <h3 className="text-lg font-light text-white tracking-wider">社群媒體</h3>
-                  <div className="flex space-x-4 mt-2">
-                    <a href="#" className="text-white opacity-80 hover:text-white transition-colors duration-300">
-                      <span className="sr-only">Twitter</span>
-                      <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
-                      </svg>
-                    </a>
-                    <a href="#" className="text-white opacity-80 hover:text-white transition-colors duration-300">
-                      <span className="sr-only">GitHub</span>
-                      <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                        <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
-                      </svg>
-                    </a>
-                    <a href="#" className="text-white opacity-80 hover:text-white transition-colors duration-300">
-                      <span className="sr-only">LinkedIn</span>
-                      <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.454C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.225 0z" />
-                      </svg>
-                    </a>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-start">
-                <div className="flex-shrink-0">
-                  <svg
-                    className="h-6 w-6 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1}
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <h3 className="text-lg font-light text-white tracking-wider">回覆時間</h3>
-                  <p className="text-white opacity-70">我們通常會在24-48小時內回覆。</p>
-                </div>
-              </div>
+      {/* Filters */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-12 bg-gray-900 bg-opacity-40 p-6 border border-gray-800">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Search */}
+            <div className="col-span-1 md:col-span-2">
+              <label htmlFor="search" className="block text-sm font-light text-white mb-1 tracking-wider">
+                搜尋
+              </label>
+              <input
+                type="text"
+                id="search"
+                className="kuchiki-input w-full"
+                placeholder="搜尋作品..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
 
-            <div className="mt-12 p-6 bg-gray-900 bg-opacity-40 border border-gray-800">
-              <h3 className="text-lg font-light text-white mb-3 tracking-wider">想要投稿？</h3>
-              <p className="text-white opacity-80 font-light">
-                我們一直在尋找對網頁開發、設計或技術充滿熱情的特約作者。
-                如果您有興趣投稿，請告知我們！
-              </p>
-            </div>
-          </div>
-
-          {/* Contact Form */}
-          <div>
-            <div className="bg-gray-900 bg-opacity-40 p-6 border border-gray-800">
-              <h2 className="text-2xl font-light text-white mb-6 tracking-wider">發送訊息</h2>
-
-              {isSubmitted ? (
-                <div className="bg-gray-900 bg-opacity-40 border border-gray-700 text-white px-4 py-3 mb-4">
-                  <p className="font-light">感謝您的聯繫！</p>
-                  <p className="text-sm opacity-80">我們已收到您的訊息，將盡快回覆。</p>
-                  <button
-                    onClick={() => setIsSubmitted(false)}
-                    className="mt-3 text-sm text-white underline opacity-80 hover:opacity-100"
-                  >
-                    發送另一條訊息
-                  </button>
-                </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  {error && (
-                    <div className="bg-gray-900 bg-opacity-40 border border-red-900 text-white px-4 py-3">
-                      {error}
-                    </div>
-                  )}
-
-                  <div>
-                    <label htmlFor="name" className="block text-sm font-light text-white">
-                      姓名
-                    </label>
-                    <div className="mt-1">
-                      <input
-                        type="text"
-                        name="name"
-                        id="name"
-                        required
-                        className="kuchiki-input w-full"
-                        value={formState.name}
-                        onChange={handleChange}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label htmlFor="email" className="block text-sm font-light text-white">
-                      電子郵件
-                    </label>
-                    <div className="mt-1">
-                      <input
-                        type="email"
-                        name="email"
-                        id="email"
-                        required
-                        className="kuchiki-input w-full"
-                        value={formState.email}
-                        onChange={handleChange}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label htmlFor="subject" className="block text-sm font-light text-white">
-                      主旨
-                    </label>
-                    <div className="mt-1">
-                      <select
-                        id="subject"
-                        name="subject"
-                        required
-                        className="kuchiki-input w-full"
-                        value={formState.subject}
-                        onChange={handleChange}
-                      >
-                        <option value="">選擇主旨</option>
-                        <option value="General Inquiry">一般詢問</option>
-                        <option value="Feedback">意見反饋</option>
-                        <option value="Guest Post">投稿申請</option>
-                        <option value="Partnership">合作機會</option>
-                        <option value="Bug Report">問題回報</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label htmlFor="message" className="block text-sm font-light text-white">
-                      訊息
-                    </label>
-                    <div className="mt-1">
-                      <textarea
-                        id="message"
-                        name="message"
-                        rows={5}
-                        required
-                        className="kuchiki-input w-full"
-                        value={formState.message}
-                        onChange={handleChange}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="kuchiki-btn"
-                    >
-                      {isSubmitting ? '發送中...' : '發送訊息'}
-                    </button>
-                  </div>
-                </form>
-              )}
+            {/* Category Filter */}
+            <div>
+              <label htmlFor="category" className="block text-sm font-light text-white mb-1 tracking-wider">
+                按類別篩選
+              </label>
+              <select
+                id="category"
+                className="kuchiki-input w-full text-white"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+              >
+                {categories.map(category => (
+                  <option key={category} value={category} className="bg-gray-900 text-white">
+                    {category}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Gallery Grid */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        {filteredItems.length === 0 ? (
+          <div className="text-center py-20 border border-gray-800 bg-gray-900 bg-opacity-40">
+            <p className="text-white font-light">找不到相符的作品</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredItems.map((item) => (
+              <div 
+                key={item.id} 
+                className="group bg-gray-900 bg-opacity-40 border border-gray-800 overflow-hidden cursor-pointer"
+                onClick={() => setActiveImage(item)}
+              >
+                <div className="relative aspect-w-4 aspect-h-3">
+                  <img
+                    src={item.imageUrl}
+                    alt={item.title}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-opacity duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                    <FiMaximize2 className="text-white text-2xl" />
+                  </div>
+                </div>
+                <div className="p-4">
+                  <h3 className="text-lg font-light text-white tracking-wider">{item.title}</h3>
+                  <p className="text-sm text-white opacity-70 mt-1">{item.description}</p>
+                  <div className="flex justify-between items-center mt-3">
+                    <span className="text-xs text-white opacity-60">{item.date}</span>
+                    <span className="text-xs bg-gray-800 px-2 py-1 text-white opacity-80">{item.category}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Lightbox Modal */}
+      {activeImage && (
+        <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center">
+          <div className="relative w-full h-full flex flex-col justify-center px-4 sm:px-12">
+            {/* Close button */}
+            <button 
+              className="absolute top-4 right-4 text-white p-2 hover:bg-gray-800 z-10"
+              onClick={() => setActiveImage(null)}
+            >
+              <FiX className="w-6 h-6" />
+            </button>
+            
+            {/* Navigation buttons */}
+            <button 
+              className="absolute left-4 sm:left-10 text-white p-2 hover:bg-gray-800 rounded-full"
+              onClick={() => navigateModal('prev')}
+            >
+              <FiChevronLeft className="w-6 h-6" />
+            </button>
+            <button 
+              className="absolute right-4 sm:right-10 text-white p-2 hover:bg-gray-800 rounded-full"
+              onClick={() => navigateModal('next')}
+            >
+              <FiChevronRight className="w-6 h-6" />
+            </button>
+            
+            {/* Image */}
+            <div className="w-full max-w-5xl mx-auto">
+              <img 
+                src={activeImage.imageUrl} 
+                alt={activeImage.title} 
+                className="w-full max-h-[70vh] object-contain"
+              />
+              <div className="mt-4">
+                <h3 className="text-xl font-light text-white tracking-wider">{activeImage.title}</h3>
+                <p className="text-white opacity-80 mt-2">{activeImage.description}</p>
+                <div className="flex justify-between items-center mt-4">
+                  <span className="text-sm text-white opacity-60">{activeImage.date}</span>
+                  <span className="text-sm bg-gray-800 px-3 py-1 text-white opacity-80">{activeImage.category}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

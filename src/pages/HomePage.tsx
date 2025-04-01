@@ -129,7 +129,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Quote section */}
+      {/* Quote section
       <div className="bg-black py-16 border-t border-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
@@ -143,7 +143,7 @@ export default function HomePage() {
             <div className="h-px w-24 bg-gradient-to-r from-transparent via-gray-800 to-transparent mx-auto mt-8"></div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Newsletter section */}
       <div className="bg-black py-16 sm:py-24 border-t border-gray-900">

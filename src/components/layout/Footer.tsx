@@ -13,10 +13,10 @@ export default function Footer() {
               <h2 className="text-xl font-light mb-2 text-white tracking-widest kuchiki-title">Bad Log</h2>
               <div className="h-px w-12 bg-gradient-to-r from-transparent via-gray-800 to-transparent mb-4"></div>
               <p className="text-white font-light text-sm tracking-wider">
-                將技術與知識作為自然的一部分分享
+                笑話欄位(待補)
               </p>
               <p className="text-white opacity-60 text-xs mt-1">
-                分享技術與知識，如同自然的一部分
+                笑話欄位
               </p>
             </div>
           </div>
@@ -37,13 +37,13 @@ export default function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link to="/about" className="text-white hover:text-gray-300 text-sm font-light tracking-wider transition-colors duration-300">
-                    關於
+                  <Link to="/gallery" className="text-white hover:text-gray-300 text-sm font-light tracking-wider transition-colors duration-300">
+                    作品
                   </Link>
                 </li>
                 <li>
-                  <Link to="/contact" className="text-white hover:text-gray-300 text-sm font-light tracking-wider transition-colors duration-300">
-                    聯絡我們
+                  <Link to="/about" className="text-white hover:text-gray-300 text-sm font-light tracking-wider transition-colors duration-300">
+                    關於
                   </Link>
                 </li>
               </ul>

@@ -108,20 +108,20 @@ export default function BlogPage() {
                 {/* Category Filter */}
                 <div>
                   <label htmlFor="category" className="block text-sm font-light text-white mb-1 tracking-wider">
-                    按類別篩選
+                  按類別篩選
                   </label>
                   <select
-                    id="category"
-                    className="kuchiki-input w-full"
-                    value={selectedCategory || ''}
-                    onChange={(e) => setSelectedCategory(e.target.value || null)}
+                  id="category"
+                  className="kuchiki-input w-full text-white"
+                  value={selectedCategory || ''}
+                  onChange={(e) => setSelectedCategory(e.target.value || null)}
                   >
-                    <option value="">所有類別</option>
-                    {categories.map(category => (
-                      <option key={category} value={category}>
-                        {category}
-                      </option>
-                    ))}
+                  <option value="" className="bg-gray-900 text-white">所有類別</option>
+                  {categories.map(category => (
+                    <option key={category} value={category} className="bg-gray-900 text-white">
+                    {category}
+                    </option>
+                  ))}
                   </select>
                 </div>
               </div>
