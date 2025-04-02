@@ -9,11 +9,11 @@ import ContactPage from './pages/ContactPage';
 import GalleryPage from './pages/GalleryPage';
 import NotFoundPage from './pages/NotFoundPage';
 import AdminPage from './pages/AdminPage';
+import { usePageViews } from './hooks/usePageViews'; // Import the real hook
 
 import { enableLocalMode, checkFirebaseConnection } from './services/blogService';
 
-
-// 使用 HashRouter 而非 BrowserRouter，以解決靜態部署中的路由問題
+// Router configuration
 const router = createHashRouter([
   {
     path: '/',
@@ -46,7 +46,10 @@ const router = createHashRouter([
 ]);
 
 function App() {
-  // 在應用載入時檢查 Firebase 連接，如果失敗則啟用本地模式
+  // Call usePageViews here to count views for any page
+  const { viewCount, loading, error } = usePageViews();
+  
+  // Check Firebase connection
   useEffect(() => {
     const checkConnection = async () => {
       try {

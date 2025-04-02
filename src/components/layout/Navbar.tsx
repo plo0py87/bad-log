@@ -63,10 +63,10 @@ export default function Navbar() {
             <Link to="/blog" className="block px-3 py-2 text-base font-light tracking-widest text-white hover:bg-gray-900 transition-colors duration-300">
               文章
             </Link>
-            <Link to="/gallery" className="px-3 py-2 text-sm font-light tracking-widest text-white hover:text-gray-300 transition-colors duration-300">
+            <Link to="/gallery" className="block px-3 py-2 text-base font-light tracking-widest text-white hover:bg-gray-900 transition-colors duration-300">
               作品
             </Link>
-            <Link to="/about" className="px-3 py-2 text-sm font-light tracking-widest text-white hover:text-gray-300 transition-colors duration-300">
+            <Link to="/about" className="block px-3 py-2 text-base font-light tracking-widest text-white hover:bg-gray-900 transition-colors duration-300">
               關於
             </Link>
           </div>
