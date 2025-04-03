@@ -1,12 +1,27 @@
 import { Link } from "react-router-dom";
 import { FaLeaf } from "react-icons/fa";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePageViews } from "../hooks/usePageViews";
 import FlipCounter from "../components/ui/FlipCounter";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../firebase"; // Ensure this is the correct path to your Firebase config
 
 export default function AboutPage() {
   const [activeTab, setActiveTab] = useState("site"); // 'site' or 'person'
   const { viewCount, loading, error } = usePageViews();
+  const [totalArticles, setTotalArticles] = useState(0);
+
+  useEffect(() => {
+    async function fetchTotalArticles() {
+      try {
+        const querySnapshot = await getDocs(collection(db, "blog_posts"));
+        setTotalArticles(querySnapshot.size);
+      } catch (err) {
+        console.error("Error fetching total articles:", err);
+      }
+    }
+    fetchTotalArticles();
+  }, []);
 
   return (
     <div className="kuchiki-overlay bg-black text-white">
@@ -63,7 +78,7 @@ export default function AboutPage() {
                 <div className="prose prose-invert max-w-none">
                   <p className="font-light text-white">
                     本站成立於2024年3月22日，初衷是希望有一個能讓自己隨意發聲的平台，
-                    可以記錄生活與成長軌跡，也可以分享平時的胡思亂想，也是一個展現自己學習成果的地方。（可能會分享一點技術內容）（但我很菜）
+                    可以記錄生活與成長軌跡，不論是平時的胡思亂想，或是學到的新知識，都希望能在這個地方分享出去。
                   </p>
                   <p className="font-light text-white">
                     無論我們在現實生活中認不認識，
@@ -118,7 +133,7 @@ export default function AboutPage() {
             {/* Values */}
             <div className="mt-20">
               <h2 className="kuchiki-title kuchiki-border mb-10 text-center text-3xl font-light tracking-wider text-white">
-                我們的價值觀
+                Dashboard
               </h2>
               <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
                 <div className="kuchiki-card border border-gray-800 bg-gray-900 bg-opacity-60 p-6">
@@ -168,15 +183,20 @@ export default function AboutPage() {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={1}
-                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5 5 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                        d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"
                       />
                     </svg>
                   </div>
-                  <h3 className="mb-2 text-xl font-light tracking-wider text-white">社群導向</h3>
-                  <p className="font-light text-white opacity-80">
-                    我們相信社群的力量。我們的博客是開發者學習、分享和共同成長的空間。
-                    我們鼓勵讀者在所有文章上提供反饋和討論。
-                  </p>
+                  <h3 className="mb-2 text-xl font-light tracking-wider text-white">網站上線天數</h3>
+                  <div className="flex justify-center mb-3">
+                    <div className="segment-display">
+                    {Math.floor((new Date().getTime() - new Date('2024-04-08').getTime()) / (1000 * 60 * 60 * 24)).toString().padStart(5, '0').split('').map((digit, index) => (
+                        <div key={index} className="segment-digit">
+                          {digit}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
                 <div className="kuchiki-card border border-gray-800 bg-gray-900 bg-opacity-60 p-6">
@@ -192,14 +212,20 @@ export default function AboutPage() {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={1}
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        d="M12 8c-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3-1.343-3-3-3z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1}
+                        d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2z"
                       />
                     </svg>
                   </div>
-                  <h3 className="mb-2 text-xl font-light tracking-wider text-white">網站上線天數</h3>
+                  <h3 className="mb-2 text-xl font-light tracking-wider text-white">文章總數</h3>
                   <div className="flex justify-center mb-3">
                     <div className="segment-display">
-                    {Math.floor((new Date().getTime() - new Date('2024-04-08').getTime()) / (1000 * 60 * 60 * 24)).toString().padStart(5, '0').split('').map((digit, index) => (
+                      {totalArticles.toString().padStart(5, '0').split('').map((digit, index) => (
                         <div key={index} className="segment-digit">
                           {digit}
                         </div>

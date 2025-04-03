@@ -12,7 +12,9 @@ import {
   Timestamp,
   serverTimestamp,
   DocumentData,
-  FieldValue
+  FieldValue,
+  setDoc,
+  limit  // Add this import
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { BlogPost} from '../types/blog';
@@ -149,7 +151,7 @@ export const updatePost = async (id: string, post: Partial<BlogPost>): Promise<b
 
   try {
     // 如果有日期字段，轉換為 Firestore Timestamp
-    const updateData: Record<string, any> = { ...post };
+    const updateData: Record<string, unknown> = { ...post };
     if (updateData.publishedDate instanceof Date) {
       updateData.publishedDate = Timestamp.fromDate(updateData.publishedDate);
     }
@@ -254,5 +256,79 @@ export const initializeFirebaseData = async (): Promise<void> => {
   } catch (error) {
     console.error('初始化 Firebase 數據庫失敗:', error);
     enableLocalMode();
+  }
+};
+
+// Get the currently featured post
+export const getFeaturedPost = async () => {
+  try {
+    const docRef = doc(db, "blog_posts", "featured");
+    const docSnap = await getDoc(docRef);
+    
+    if (docSnap.exists()) {
+      return docSnap.data();
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error("Error getting featured post:", error);
+    return null;
+  }
+};
+
+// Update the featured post
+export const updateFeaturedPost = async (postId: string | null) => {
+  try {
+    const featuredRef = doc(db, "blog_posts", "featured");
+    
+    if (postId) {
+      await setDoc(featuredRef, { 
+        postId: postId,
+        updatedAt: new Date()
+      });
+    } else {
+      // If postId is null, we're removing the featured status
+      await setDoc(featuredRef, { 
+        postId: null,
+        updatedAt: new Date()
+      });
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("Error updating featured post:", error);
+    return false;
+  }
+};
+
+export const getRecentPosts = async (limitCount = 3, excludeId: string | null = null): Promise<BlogPost[]> => {
+  try {
+    const q = query(
+      collection(db, "blog_posts"),
+      where("archived", "!=", true),
+      orderBy("archived"),
+      orderBy("publishedDate", "desc"),
+      limit(excludeId ? limitCount + 1 : limitCount)
+    );
+    
+    const querySnapshot = await getDocs(q);
+    let posts: BlogPost[] = [];
+    
+    querySnapshot.forEach((doc) => {
+      if (doc.id !== "featured" && (!excludeId || doc.id !== excludeId)) {
+        // Use convertFirestoreDocToPost instead of directly spreading data
+        posts.push(convertFirestoreDocToPost(doc));
+      }
+    });
+    
+    // If we have more posts than the limit because we excluded the featured post
+    if (excludeId && posts.length > limitCount) {
+      posts = posts.slice(0, limitCount);
+    }
+    
+    return posts;
+  } catch (error) {
+    console.error("Error getting recent posts:", error);
+    return [];
   }
 };

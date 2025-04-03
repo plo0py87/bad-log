@@ -1,13 +1,46 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { blogPosts } from '../data/blogPosts';
 import BlogList from '../features/blog/components/BlogList';
 import { FaLeaf } from 'react-icons/fa';
+import { getFeaturedPost, getPostById, getRecentPosts } from '../services/blogService';
+import { BlogPost } from '../types/blog';
 
 export default function HomePage() {
-  // Get the newest post as featured
-  const featuredPost = blogPosts[0];
-  // Get the rest of the posts for the recent posts section
-  const recentPosts = blogPosts.slice(1, 4);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [featuredPost, setFeaturedPost] = useState<BlogPost | null>(null);
+  const [recentPosts, setRecentPosts] = useState<BlogPost[]>([]);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        setLoading(true);
+        
+        // Get featured post ID
+        const featuredData = await getFeaturedPost();
+        
+        if (featuredData && featuredData.postId) {
+          // Fetch the actual featured post
+          const post = await getPostById(featuredData.postId);
+          if (post) {
+            setFeaturedPost(post);
+          }
+        }
+        
+        // Get recent posts (excluding the featured post)
+        const posts = await getRecentPosts(4, featuredData?.postId);
+        setRecentPosts(posts);
+        
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching homepage data:', err);
+        setError('載入資料時發生錯誤');
+        setLoading(false);
+      }
+    }
+    
+    fetchData();
+  }, []);
 
   return (
     <div className="bg-black text-white kuchiki-overlay">
@@ -37,7 +70,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Featured post */}
+      {/* Featured post section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center mb-12">
           <h2 className="text-2xl font-light tracking-widest text-white sm:text-3xl kuchiki-title kuchiki-border">
@@ -48,58 +81,72 @@ export default function HomePage() {
           </p>
         </div>
 
-        <div className="mt-12 flex flex-col lg:flex-row rounded-sm shadow-xl overflow-hidden kuchiki-card">
-          {featuredPost.coverImage && (
-            <div className="lg:w-1/2">
-              <img
-                className="h-64 w-full object-cover lg:h-full filter contrast-125"
-                src={featuredPost.coverImage}
-                alt={featuredPost.title}
-              />
-            </div>
-          )}
-
-          <div className="lg:w-1/2 bg-gray-900 bg-opacity-60 p-8">
-            {featuredPost.category && (
-              <span className="text-xs font-light inline-block py-1 px-2 uppercase tracking-widest text-white bg-black bg-opacity-50 mb-4 border border-gray-800">
-                {featuredPost.category}
-              </span>
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="text-white">載入中...</div>
+          </div>
+        ) : error ? (
+          <div className="text-center text-red-400 py-8">
+            {error}
+          </div>
+        ) : featuredPost ? (
+          <div className="mt-12 flex flex-col lg:flex-row rounded-sm shadow-xl overflow-hidden kuchiki-card">
+            {featuredPost.coverImage && (
+              <div className="lg:w-1/2">
+                <img
+                  className="h-64 w-full object-cover lg:h-full filter contrast-125"
+                  src={featuredPost.coverImage}
+                  alt={featuredPost.title}
+                />
+              </div>
             )}
 
-            <Link to={`/blog/${featuredPost.id}`}>
-              <h3 className="text-2xl font-light text-white hover:text-gray-200 transition-colors tracking-wide">
-                {featuredPost.title}
-              </h3>
-            </Link>
+            <div className="lg:w-1/2 bg-gray-900 bg-opacity-60 p-8">
+              {featuredPost.category && (
+                <span className="text-xs font-light inline-block py-1 px-2 uppercase tracking-widest text-white bg-black bg-opacity-50 mb-4 border border-gray-800">
+                  {featuredPost.category}
+                </span>
+              )}
 
-            <p className="mt-3 text-white opacity-80">
-              {featuredPost.excerpt}
-            </p>
+              <Link to={`/blog/${featuredPost.id}`}>
+                <h3 className="text-2xl font-light text-white hover:text-gray-200 transition-colors tracking-wide">
+                  {featuredPost.title}
+                </h3>
+              </Link>
 
-            <div className="mt-6 flex items-center">
-              <div>
-                <p className="text-sm text-white opacity-60">
-                  {typeof featuredPost.publishedDate === 'string'
-                    ? featuredPost.publishedDate
-                    : featuredPost.publishedDate.toLocaleDateString('zh-TW', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })}
-                </p>
+              <p className="mt-3 text-white opacity-80">
+                {featuredPost.excerpt}
+              </p>
+
+              <div className="mt-6 flex items-center">
+                <div>
+                  <p className="text-sm text-white opacity-60">
+                    {typeof featuredPost.publishedDate === 'string'
+                      ? featuredPost.publishedDate
+                      : featuredPost.publishedDate.toLocaleDateString('zh-TW', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        })}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-8">
+                <Link
+                  to={`/blog/${featuredPost.id}`}
+                  className="kuchiki-btn"
+                >
+                  繼續閱讀
+                </Link>
               </div>
             </div>
-
-            <div className="mt-8">
-              <Link
-                to={`/blog/${featuredPost.id}`}
-                className="kuchiki-btn"
-              >
-                繼續閱讀
-              </Link>
-            </div>
           </div>
-        </div>
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-white opacity-70">目前沒有精選文章</p>
+          </div>
+        )}
       </div>
 
       {/* Recent posts */}
@@ -115,7 +162,17 @@ export default function HomePage() {
           </div>
 
           <div className="mt-12">
-            <BlogList posts={recentPosts} />
+            {loading ? (
+              <div className="flex justify-center items-center h-48">
+                <div className="text-white">載入中...</div>
+              </div>
+            ) : recentPosts.length > 0 ? (
+              <BlogList posts={recentPosts} />
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-white opacity-70">沒有最近的文章</p>
+              </div>
+            )}
           </div>
 
           <div className="mt-16 text-center">
@@ -128,22 +185,6 @@ export default function HomePage() {
           </div>
         </div>
       </div>
-
-      {/* Quote section
-      <div className="bg-black py-16 border-t border-gray-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <div className="h-px w-24 bg-gradient-to-r from-transparent via-gray-800 to-transparent mx-auto mb-8"></div>
-            <p className="text-xl font-light italic text-white opacity-80 max-w-2xl mx-auto tracking-wide">
-              "朽木也能重新綻放花朵，舊事物中孕育著新知識。"
-            </p>
-            <p className="mt-2 text-sm font-light text-white opacity-60">
-              腐朽的木頭重新開花。新知識從舊事物中湧現。
-            </p>
-            <div className="h-px w-24 bg-gradient-to-r from-transparent via-gray-800 to-transparent mx-auto mt-8"></div>
-          </div>
-        </div>
-      </div> */}
 
       {/* Newsletter section */}
       <div className="bg-black py-16 sm:py-24 border-t border-gray-900">

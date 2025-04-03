@@ -4,12 +4,12 @@ export interface BlogPost {
   slug: string;
   excerpt: string;
   content: string;
-  publishedDate: string | Date;
-  coverImage?: string;
+  publishedDate: Date;
   category?: string;
   tags?: string[];
+  coverImage?: string;
+  archived?: boolean;
 }
-
 export interface Category {
   id: string;
   name: string;
