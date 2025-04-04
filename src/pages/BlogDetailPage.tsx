@@ -11,6 +11,7 @@ export default function BlogDetailPage() {
 
   const [post, setPost] = useState<BlogPost | null>(null);
   const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([]);
+  const [nextInSeries, setNextInSeries] = useState<BlogPost | null>(null); // Add this state
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -53,6 +54,28 @@ export default function BlogDetailPage() {
           .slice(0, 3);
 
         setRelatedPosts(related);
+
+        // 尋找同一系列中的下一篇文章（相同類別，但發布日期較新的第一篇）
+        if (currentPost.category) {
+          // Filter all posts in the same category except the current one
+          const sameCategoryPosts = allPosts.filter(p => 
+            p.id !== currentPost.id && 
+            p.category === currentPost.category
+          );
+          
+          // Sort by publish date to find the next one chronologically
+          const sortedPosts = sameCategoryPosts.sort((a, b) => 
+            new Date(a.publishedDate).getTime() - new Date(b.publishedDate).getTime()
+          );
+          
+          // Find the first post with a date later than current post
+          const nextPost = sortedPosts.find(p => 
+            new Date(p.publishedDate) > new Date(currentPost.publishedDate)
+          );
+          
+          setNextInSeries(nextPost || null);
+        }
+        
         setLoading(false);
       } catch (err) {
         console.error('Error fetching post:', err);
@@ -112,6 +135,35 @@ export default function BlogDetailPage() {
 
       {/* Blog post */}
       <BlogDetail post={post} />
+
+      {/* Next in Series */}
+      {nextInSeries && (
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
+          <div className="border-t border-gray-800 pt-8">
+            <h3 className="text-xl font-light text-white mb-4 tracking-wider">
+              繼續觀看此系列下一篇文章
+            </h3>
+            <div className="bg-gray-900 border border-gray-800 p-6 hover:border-gray-600 transition-colors duration-300">
+              <Link to={`/blog/${nextInSeries.id}`} className="flex flex-col md:flex-row gap-4 items-center">
+                {nextInSeries.coverImage && (
+                  <div className="w-full md:w-1/3 lg:w-1/4">
+                    <img 
+                      src={nextInSeries.coverImage} 
+                      alt={nextInSeries.title}
+                      className="w-full h-32 object-cover"
+                    />
+                  </div>
+                )}
+                <div className={nextInSeries.coverImage ? "w-full md:w-2/3 lg:w-3/4" : "w-full"}>
+                  <span className="text-sm text-gray-400">下一篇</span>
+                  <h4 className="text-xl font-medium text-white mt-1">{nextInSeries.title}</h4>
+                  <p className="text-gray-300 mt-2 line-clamp-2">{nextInSeries.excerpt}</p>
+                </div>
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Related Posts */}
       {relatedPosts.length > 0 && (

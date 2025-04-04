@@ -14,6 +14,7 @@ import { BlogPost } from '../types/blog';
 import { FaLeaf, FaPlus, FaTrash, FaEdit, FaUpload, FaArchive, FaStar } from 'react-icons/fa';
 import { marked } from 'marked';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { useAuth } from '../context/AuthContext';
 
 export default function AdminPage() {
   const [loading, setLoading] = useState(true);
@@ -52,6 +53,18 @@ export default function AdminPage() {
 
   // Add a state to track the featured post
   const [featuredPostId, setFeaturedPostId] = useState<string | null>(null);
+
+  // Add this near your other state declarations
+  const { logout, currentUser } = useAuth();
+
+  // Add a logout handler
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Failed to log out", error);
+    }
+  };
 
   // 初始加載數據
   useEffect(() => {
@@ -120,7 +133,7 @@ export default function AdminPage() {
     setFormData(prev => ({ ...prev, slug }));
   };
 
-  // 提交表單
+  // Modify the handleSubmit function to include archived field
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -158,8 +171,13 @@ export default function AdminPage() {
           setError('更新文章時發生錯誤');
         }
       } else {
-        // Add new post
-        const postId = await addPost(formData);
+        // Add new post with archived field explicitly set to false
+        const postWithArchiveField = {
+          ...formData,
+          archived: false
+        };
+        
+        const postId = await addPost(postWithArchiveField);
 
         if (postId) {
           // Refresh posts list
@@ -664,7 +682,31 @@ export default function AdminPage() {
 
             {/* 文章列表 */}
             <div className="mb-8">
-              <h2 className="text-2xl font-light text-white mb-6 tracking-wider">文章列表</h2>
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-2xl font-light text-white tracking-wider">文章列表</h2>
+                <div className="flex items-center">
+                  {currentUser && (
+                    <div className="flex items-center mr-4">
+                      {currentUser.photoURL && (
+                        <img 
+                          src={currentUser.photoURL} 
+                          alt={currentUser.displayName || '管理員'} 
+                          className="h-8 w-8 rounded-full mr-2"
+                        />
+                      )}
+                      <span className="text-white text-sm">
+                        {currentUser.displayName || currentUser.email}
+                      </span>
+                    </div>
+                  )}
+                  <button 
+                    onClick={handleLogout}
+                    className="kuchiki-btn"
+                  >
+                    登出
+                  </button>
+                </div>
+              </div>
 
               <div className="overflow-x-auto">
                 <table className="min-w-full bg-gray-900 bg-opacity-40 border border-gray-800">

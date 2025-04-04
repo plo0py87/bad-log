@@ -47,7 +47,6 @@ export const checkFirebaseConnection = async (): Promise<boolean> => {
 
 // 集合名稱
 const POSTS_COLLECTION = 'blog_posts';
-const AUTHORS_COLLECTION = 'authors';
 
 // 轉換 Firestore 文檔為 BlogPost 物件
 const convertFirestoreDocToPost = (doc: DocumentData): BlogPost => {
@@ -262,7 +261,7 @@ export const initializeFirebaseData = async (): Promise<void> => {
 // Get the currently featured post
 export const getFeaturedPost = async () => {
   try {
-    const docRef = doc(db, "blog_posts", "featured");
+    const docRef = doc(db, "statistics", "featured");
     const docSnap = await getDoc(docRef);
     
     if (docSnap.exists()) {
@@ -279,7 +278,7 @@ export const getFeaturedPost = async () => {
 // Update the featured post
 export const updateFeaturedPost = async (postId: string | null) => {
   try {
-    const featuredRef = doc(db, "blog_posts", "featured");
+    const featuredRef = doc(db, "statistics", "featured");
     
     if (postId) {
       await setDoc(featuredRef, { 
@@ -303,26 +302,27 @@ export const updateFeaturedPost = async (postId: string | null) => {
 
 export const getRecentPosts = async (limitCount = 3, excludeId: string | null = null): Promise<BlogPost[]> => {
   try {
+    // Request more posts initially to account for filtering
+    const requestLimit = excludeId ? limitCount + 2 : limitCount + 1;
+    
     const q = query(
       collection(db, "blog_posts"),
       where("archived", "!=", true),
       orderBy("archived"),
       orderBy("publishedDate", "desc"),
-      limit(excludeId ? limitCount + 1 : limitCount)
+      limit(requestLimit) // Increase the limit to account for filtering
     );
-    
     const querySnapshot = await getDocs(q);
     let posts: BlogPost[] = [];
-    
+    console.log("Query snapshot:", querySnapshot);
     querySnapshot.forEach((doc) => {
       if (doc.id !== "featured" && (!excludeId || doc.id !== excludeId)) {
-        // Use convertFirestoreDocToPost instead of directly spreading data
         posts.push(convertFirestoreDocToPost(doc));
       }
     });
     
-    // If we have more posts than the limit because we excluded the featured post
-    if (excludeId && posts.length > limitCount) {
+    // Ensure we only return exactly the number requested
+    if (posts.length > limitCount) {
       posts = posts.slice(0, limitCount);
     }
     

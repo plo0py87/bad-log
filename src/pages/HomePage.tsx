@@ -28,7 +28,8 @@ export default function HomePage() {
         }
         
         // Get recent posts (excluding the featured post)
-        const posts = await getRecentPosts(4, featuredData?.postId);
+        const posts = await getRecentPosts(3, featuredData?.postId);
+        console.log('Recent posts:', posts);
         setRecentPosts(posts);
         
         setLoading(false);

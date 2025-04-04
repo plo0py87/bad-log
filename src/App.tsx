@@ -9,11 +9,13 @@ import ContactPage from './pages/ContactPage';
 import GalleryPage from './pages/GalleryPage';
 import NotFoundPage from './pages/NotFoundPage';
 import AdminPage from './pages/AdminPage';
-import { usePageViews } from './hooks/usePageViews'; // Import the real hook
-
+import LoginPage from './pages/LoginPage'; // Make sure you have this
+import { usePageViews } from './hooks/usePageViews';
 import { enableLocalMode, checkFirebaseConnection } from './services/blogService';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 
-// Router configuration
+// Router configuration with nested routes for protected paths
 const router = createHashRouter([
   {
     path: '/',
@@ -36,8 +38,24 @@ const router = createHashRouter([
     element: <Layout><GalleryPage /></Layout>,
   },
   {
+    path: '/login',
+    element: <Layout><LoginPage /></Layout>,
+  },
+  // Protected admin routes
+  {
     path: '/admin',
-    element: <AdminPage />,
+    element: <ProtectedRoute />,
+    children: [
+      {
+        path: '', // This means /admin itself
+        element: <AdminPage />
+      },
+      // You can add more admin routes here if needed
+      // {
+      //   path: 'users',
+      //   element: <AdminUsersPage />
+      // }
+    ]
   },
   {
     path: '*',
@@ -68,7 +86,9 @@ function App() {
   }, []);
 
   return (
-    <RouterProvider router={router} />
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
   );
 }
 
