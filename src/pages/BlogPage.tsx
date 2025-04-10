@@ -72,7 +72,7 @@ export default function BlogPage() {
           </h1>
           <div className="h-px w-24 bg-gradient-to-r from-transparent via-white to-transparent mx-auto mt-4 mb-6"></div>
           <p className="mt-3 max-w-2xl mx-auto text-lg text-white opacity-80 font-light">
-            瀏覽我們關於Web開發、設計和技術的文章集合
+            你聽見了嗎 我在這裡歌唱
           </p>
         </div>
 

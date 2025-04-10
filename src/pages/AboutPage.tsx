@@ -42,7 +42,7 @@ export default function AboutPage() {
               關於本站
             </h1>
             <div className="mx-auto mb-6 mt-6 h-px w-24 bg-gradient-to-r from-transparent via-white to-transparent"></div>
-            <p className="mx-auto mt-6 max-w-3xl text-sm font-light text-white opacity-75">和我</p>
+            <p className="mx-auto mt-6 max-w-3xl text-lg font-light text-white opacity-75">和我</p>
           </div>
         </div>
       </div>
@@ -77,7 +77,7 @@ export default function AboutPage() {
                 </h2>
                 <div className="prose prose-invert max-w-none">
                   <p className="font-light text-white">
-                    本站成立於2024年3月22日，初衷是希望有一個能讓自己隨意發聲的平台，
+                    本站成立於2024年3月22日，做為一個給自己的19歲生日禮物，初衷是希望有一個能讓自己隨意發聲的平台，
                     可以記錄生活與成長軌跡，不論是平時的胡思亂想，或是學到的新知識，都希望能在這個地方分享出去。
                   </p>
                   <p className="font-light text-white">
@@ -248,10 +248,7 @@ export default function AboutPage() {
                 </h2>
                 <div className="prose prose-invert max-w-none">
                   <p className="font-light text-white">
-                    你好，我是陳興彥，這個網站的創建者和主要作者。
-                  </p>
-                  <p className="font-light text-white">
-                    我目前就讀台大醫工系一年級，INFJ，喜歡寫程式、科技、音樂、打球、心理學。
+                    你好，我是陳興彥，這個網站的創建者和主要作者。歡迎來到我的世界。
                   </p>
                 </div>
 
@@ -308,7 +305,7 @@ export default function AboutPage() {
                         </svg>
                       </a>
                       <a
-                        href="#"
+                        href="https://github.com/plo0py87"
                         className="text-white opacity-80 transition-colors duration-300 hover:text-white"
                       >
                         <span className="sr-only">GitHub</span>
@@ -321,7 +318,7 @@ export default function AboutPage() {
                         </svg>
                       </a>
                       <a
-                        href="#"
+                        href="https://www.linkedin.com/in/shine-chen-7b80b4319/"
                         className="text-white opacity-80 transition-colors duration-300 hover:text-white"
                       >
                         <span className="sr-only">LinkedIn</span>
@@ -368,61 +365,53 @@ export default function AboutPage() {
                       />
                     </svg>
                   </div>
-                  <h3 className="mb-2 text-xl font-light tracking-wider text-white">前端開發</h3>
-                  <p className="font-light text-white opacity-80">
-                    精通 HTML, CSS, JavaScript，以及現代框架如 React、Vue 和 Angular。
-                    具有創建響應式、高性能網頁應用程序的豐富經驗。
-                  </p>
+                  <h3 className="mb-2 text-xl font-light tracking-wider text-white">Coding</h3>
+                    <ul className="space-y-2 font-light text-white opacity-80">
+                    <li>• Flutter</li>
+                    <li>• C++</li>
+                    <li>• Python</li>
+                    <li>• React</li>
+                    <li>• TypeScript / JavaScript</li>
+                    </ul>
                 </div>
 
                 <div className="kuchiki-card border border-gray-800 bg-gray-900 bg-opacity-60 p-6">
                   <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-none border border-gray-800">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-6 w-6 text-white"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1}
-                        d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"
-                      />
-                    </svg>
+                  <FaLeaf className="h-6 w-6 text-white" />
                   </div>
-                  <h3 className="mb-2 text-xl font-light tracking-wider text-white">後端開發</h3>
-                  <p className="font-light text-white opacity-80">
-                    熟悉 Node.js, Express, MongoDB 等後端技術。 能夠設計和實現 RESTful
-                    API，並確保高效的數據庫操作和穩定的服務器性能。
-                  </p>
+                  <h3 className="mb-2 text-xl font-light tracking-wider text-white">興趣</h3>
+                  <ul className="space-y-2 font-light text-white opacity-80">
+                  <li>• 吉他、彈唱</li>
+                  <li>• 籃球、排球</li>
+                  <li>• 科技、AI、資安</li>
+                  <li>• 神經科學、心理學</li>
+                  <li>• 非常歡迎找我開團或打球或聊天</li>
+                  </ul>
                 </div>
 
                 <div className="kuchiki-card border border-gray-800 bg-gray-900 bg-opacity-60 p-6">
                   <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-none border border-gray-800">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-6 w-6 text-white"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1}
-                        d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
-                      />
-                    </svg>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6 text-white"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1}
+                    d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
+                    />
+                  </svg>
                   </div>
-                  <h3 className="mb-2 text-xl font-light tracking-wider text-white">
-                    用戶體驗設計
-                  </h3>
-                  <p className="font-light text-white opacity-80">
-                    注重用戶體驗和界面設計。精通 Figma 和 Adobe XD，
-                    能夠從概念到實現創建美觀且功能齊全的用戶界面。
-                  </p>
+                  <h3 className="mb-2 text-xl font-light tracking-wider text-white">應用</h3>
+                  <ul className="space-y-2 font-light text-white opacity-80">
+                  <li>• Git / GitHub</li>
+                  <li>• VS Code</li>
+                  <li>• Firebase</li>
+                  </ul>
                 </div>
               </div>
             </div>
@@ -436,22 +425,20 @@ export default function AboutPage() {
                 <div className="relative border-l border-gray-800 pl-8">
                   <div className="absolute left-[-6.5px] top-1.5 h-3 w-3 bg-white"></div>
                   <h3 className="text-xl font-light tracking-wider text-white">
-                    高級前端開發工程師
+                    臺灣大學醫學工程學系
                   </h3>
-                  <p className="mb-3 mt-1 text-sm text-gray-400">2022年至今 · 某科技公司</p>
+                  <p className="mb-3 mt-1 text-sm text-gray-400">2024年至今</p>
                   <p className="font-light text-white opacity-80">
-                    負責公司主要產品的前端開發和維護，優化用戶界面和體驗。
-                    引入現代前端技術，提高團隊開發效率。帶領前端團隊完成多個重要項目。
+                    Google Developer Group 成員
                   </p>
                 </div>
 
                 <div className="relative border-l border-gray-800 pl-8">
                   <div className="bg白 absolute left-[-6.5px] top-1.5 h-3 w-3"></div>
-                  <h3 className="text白 text-xl font-light tracking-wider">網頁開發工程師</h3>
-                  <p className="mb-3 mt-1 text-sm text-gray-400">2018年至2022年 · 另一家科技公司</p>
+                  <h3 className="text白 text-xl font-light tracking-wider">武陵高中畢業</h3>
+                  <p className="mb-3 mt-1 text-sm text-gray-400">2021年至2024年</p>
                   <p className="text白 font-light opacity-80">
-                    參與多個企業網站和應用程序的開發。使用 React、Redux 和 TypeScript
-                    構建高性能的網頁應用。 與後端團隊合作實現無縫的 API 集成。
+                    鮮音吉他社35屆活動長
                   </p>
                 </div>
               </div>

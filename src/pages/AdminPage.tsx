@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-// Update the import to include updatePost
 import { 
   addPost, 
   getAllPosts, 
@@ -9,9 +8,13 @@ import {
   getFeaturedPost,
   updateFeaturedPost
 } from '../services/blogService';
+// Add gallery service imports
+import { addGalleryItem, getAllGalleryItems, deleteGalleryItem, updateGalleryItem } from '../services/galleryService';
 import { BlogPost } from '../types/blog';
-// Add FaArchive and FaStar icons
-import { FaLeaf, FaPlus, FaTrash, FaEdit, FaUpload, FaArchive, FaStar } from 'react-icons/fa';
+// Add GalleryItem type
+import { GalleryItem } from '../types/gallery';
+// Add FaImages icon
+import { FaLeaf, FaPlus, FaTrash, FaEdit, FaUpload, FaArchive, FaStar, FaImages } from 'react-icons/fa';
 import { marked } from 'marked';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { useAuth } from '../context/AuthContext';
@@ -66,6 +69,25 @@ export default function AdminPage() {
     }
   };
 
+  // Add state for managing active section
+  const [activeSection, setActiveSection] = useState<'blog' | 'gallery'>('blog');
+  
+  // Add state for gallery items
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
+  const [isAddingGallery, setIsAddingGallery] = useState(false);
+  const [isEditingGallery, setIsEditingGallery] = useState(false);
+  const [currentGalleryId, setCurrentGalleryId] = useState<string | null>(null);
+  
+  // Gallery form state
+  const [galleryForm, setGalleryForm] = useState<Omit<GalleryItem, 'id'>>({
+    title: '',
+    description: '',
+    imageUrl: '',
+    category: '',
+    date: new Date().toISOString().split('T')[0],
+    url: '', // Add URL field
+  });
+
   // 初始加載數據
   useEffect(() => {
     const fetchData = async () => {
@@ -82,6 +104,10 @@ export default function AdminPage() {
         // 獲取精選文章 ID
         const featured = await getFeaturedPost();
         setFeaturedPostId(featured?.postId || null);
+
+        // Fetch gallery items
+        const fetchedGalleryItems = await getAllGalleryItems();
+        setGalleryItems(fetchedGalleryItems);
 
         setLoading(false);
       } catch (err) {
@@ -315,6 +341,50 @@ export default function AdminPage() {
     }
   };
 
+  // Add this function to handle cancel with confirmation
+  const handleCancel = () => {
+    // Only show confirmation if editing (not for new posts) and form has content
+    const hasContent = formData.title || formData.content || formData.excerpt;
+    
+    if (isEditing && hasContent) {
+      if (window.confirm('確定要取消編輯嗎？所有未儲存的變更將會遺失。')) {
+        // Reset form
+        setFormData({
+          title: '',
+          slug: '',
+          excerpt: '',
+          content: '',
+          publishedDate: new Date(),
+          category: '',
+          tags: [],
+          coverImage: ''
+        });
+        setIsAddingPost(false);
+        setIsEditing(false);
+        setCurrentPostId(null);
+        setActiveStep(1);
+        setPreviewMode(false);
+      }
+    } else {
+      // For new posts or empty forms, just cancel without confirmation
+      setFormData({
+        title: '',
+        slug: '',
+        excerpt: '',
+        content: '',
+        publishedDate: new Date(),
+        category: '',
+        tags: [],
+        coverImage: ''
+      });
+      setIsAddingPost(false);
+      setIsEditing(false);
+      setCurrentPostId(null);
+      setActiveStep(1);
+      setPreviewMode(false);
+    }
+  };
+
   // 處理圖片選擇
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -377,6 +447,173 @@ export default function AdminPage() {
       console.error('上傳過程錯誤:', err);
       setError('上傳圖片時發生錯誤');
       setIsUploading(false);
+    }
+  };
+
+  // Handle gallery form input changes
+  const handleGalleryInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setGalleryForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // Handle gallery image upload
+  const handleGalleryImageUpload = async () => {
+    if (!imageFile) return;
+    
+    try {
+      setIsUploading(true);
+      setUploadProgress(0);
+      
+      const storage = getStorage();
+      const timestamp = new Date().getTime();
+      const storageRef = ref(storage, `gallery-images/${timestamp}_${imageFile.name}`);
+      
+      const uploadTask = uploadBytesResumable(storageRef, imageFile);
+      
+      await new Promise<void>((resolve, reject) => {
+        uploadTask.on(
+          'state_changed',
+          (snapshot) => {
+            const progress = Math.round(
+              (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+            );
+            setUploadProgress(progress);
+          },
+          (error) => {
+            console.error('上傳錯誤:', error);
+            setError('上傳圖片時發生錯誤');
+            setIsUploading(false);
+            reject(error);
+          },
+          async () => {
+            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+            setGalleryForm(prev => ({
+              ...prev,
+              imageUrl: downloadURL
+            }));
+            setIsUploading(false);
+            resolve();
+          }
+        );
+      });
+    } catch (err) {
+      console.error('上傳過程錯誤:', err);
+      setError('上傳圖片時發生錯誤');
+      setIsUploading(false);
+    }
+  };
+
+  // Handle gallery submission
+  const handleGallerySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      setLoading(true);
+      
+      if (isEditingGallery && currentGalleryId) {
+        // Update existing gallery item
+        const success = await updateGalleryItem(currentGalleryId, galleryForm);
+        
+        if (success) {
+          setGalleryItems(prevItems => 
+            prevItems.map(item => item.id === currentGalleryId ? { ...item, ...galleryForm } : item)
+          );
+          
+          resetGalleryForm();
+          setError(null);
+        } else {
+          setError('更新圖片時發生錯誤');
+        }
+      } else {
+        // Add new gallery item
+        const itemId = await addGalleryItem(galleryForm);
+        
+        if (itemId) {
+          const newItem = { id: itemId, ...galleryForm };
+          setGalleryItems(prev => [...prev, newItem]);
+          
+          resetGalleryForm();
+          setError(null);
+        } else {
+          setError('添加圖片時發生錯誤');
+        }
+      }
+    } catch (err) {
+      console.error('Gallery submission error:', err);
+      setError('提交表單時發生錯誤');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Reset gallery form
+  const resetGalleryForm = () => {
+    setGalleryForm({
+      title: '',
+      description: '',
+      imageUrl: '',
+      category: '',
+      date: new Date().toISOString().split('T')[0],
+      url: '', // Include URL in reset
+    });
+    setIsAddingGallery(false);
+    setIsEditingGallery(false);
+    setCurrentGalleryId(null);
+    setImageFile(null);
+    setImagePreview(null);
+  };
+
+  // Handle edit gallery item
+  const handleEditGallery = (item: GalleryItem) => {
+    console.log('Editing gallery item:', item); // Debug log
+    setGalleryForm({
+      title: item.title || '',
+      description: item.description || '',
+      imageUrl: item.imageUrl || '',
+      category: item.category || '',
+      date: item.date || new Date().toISOString().split('T')[0],
+      url: item.url || '' // Ensure URL is explicitly set with fallback
+    });
+    setCurrentGalleryId(item.id);
+    setIsEditingGallery(true);
+    setIsAddingGallery(true);
+  };
+
+  // Handle delete gallery item
+  const handleDeleteGallery = async (id: string) => {
+    if (window.confirm('確定要刪除這個圖片項目嗎？此操作無法撤銷。')) {
+      try {
+        setLoading(true);
+        const success = await deleteGalleryItem(id);
+        
+        if (success) {
+          setGalleryItems(prev => prev.filter(item => item.id !== id));
+          setError(null);
+        } else {
+          setError('刪除圖片時發生錯誤');
+        }
+      } catch (err) {
+        console.error('Delete gallery error:', err);
+        setError('刪除圖片時發生錯誤');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  // Handle gallery cancel
+  const handleGalleryCancel = () => {
+    const hasContent = galleryForm.title || galleryForm.description;
+    
+    if (isEditingGallery && hasContent) {
+      if (window.confirm('確定要取消編輯嗎？所有未儲存的變更將會遺失。')) {
+        resetGalleryForm();
+      }
+    } else {
+      resetGalleryForm();
     }
   };
 
@@ -447,76 +684,96 @@ export default function AdminPage() {
       </div>
 
       <div>
-        <label className="block text-sm font-light text-white mb-1 tracking-wider">
-          封面圖片
-        </label>
-        <div className="space-y-4">
-          {/* 圖片上傳 */}
-          <div className="flex items-center gap-2">
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageSelect}
-              className="hidden"
-              id="cover-image-upload"
-            />
-            <label 
-              htmlFor="cover-image-upload"
-              className="kuchiki-btn cursor-pointer flex items-center gap-2"
-            >
-              <FaUpload size={14} />
-              <span>選擇圖片</span>
-            </label>
-            
-            {imageFile && !isUploading && (
-              <button
-                type="button"
-                onClick={handleImageUpload}
-                className="kuchiki-btn"
-                disabled={isUploading}
-              >
-                上傳到 Firebase
-              </button>
-            )}
-          </div>
-
-          {/* 上傳進度 */}
-          {isUploading && (
-            <div className="w-full bg-gray-700">
-              <div 
-                className="bg-green-600 h-2" 
-                style={{ width: `${uploadProgress}%` }}
-              ></div>
-              <p className="text-xs text-white mt-1">上傳中: {uploadProgress}%</p>
-            </div>
-          )}
-
-          {/* 圖片預覽 */}
-          {(imagePreview || formData.coverImage) && (
-            <div className="mt-2">
-              <p className="text-sm text-white mb-1">預覽:</p>
-              <img 
-                src={formData.coverImage || imagePreview || undefined} 
-                alt="封面預覽" 
-                className="max-h-40 border border-gray-700"
-              />
-            </div>
-          )}
-
-          {/* 或手動輸入 URL */}
-          <div>
-            <p className="text-sm text-white opacity-70 mb-1">或輸入圖片 URL:</p>
-            <input
-              type="text"
-              name="coverImage"
-              value={formData.coverImage || ''}
-              onChange={handleInputChange}
-              className="kuchiki-input w-full"
-              placeholder="https://example.com/image.jpg"
-            />
-          </div>
-        </div>
+  <label className="block text-sm font-light text-white mb-1 tracking-wider">
+    封面圖片 {isEditing && formData.coverImage && "(已有上傳圖片)"}
+  </label>
+  <div className="space-y-4">
+    {/* 已有圖片 (編輯模式) */}
+    {isEditing && formData.coverImage && (
+      <div className="p-3 bg-gray-800 bg-opacity-50 border border-gray-700 mb-3">
+        <p className="text-sm text-white mb-2">當前封面圖片:</p>
+        <img 
+          src={formData.coverImage} 
+          alt="當前封面" 
+          className="max-h-40 border border-gray-700 mb-2"
+        />
+        <p className="text-xs text-white opacity-70 break-all mb-2">{formData.coverImage}</p>
+        <button
+          type="button"
+          onClick={() => setFormData(prev => ({ ...prev, coverImage: '' }))}
+          className="text-red-400 hover:text-red-300 text-xs underline"
+        >
+          移除現有圖片
+        </button>
       </div>
+    )}
+    
+    {/* 圖片上傳 */}
+    <div className="flex items-center gap-2">
+      <input
+        type="file"
+        accept="image/*"
+        onChange={handleImageSelect}
+        className="hidden"
+        id="cover-image-upload"
+      />
+      <label 
+        htmlFor="cover-image-upload"
+        className="kuchiki-btn cursor-pointer flex items-center gap-2"
+      >
+        <FaUpload size={14} />
+        <span>{isEditing ? '更換圖片' : '選擇圖片'}</span>
+      </label>
+      
+      {imageFile && !isUploading && (
+        <button
+          type="button"
+          onClick={handleImageUpload}
+          className="kuchiki-btn"
+          disabled={isUploading}
+        >
+          上傳到 Firebase
+        </button>
+      )}
+    </div>
+
+    {/* 上傳進度 */}
+    {isUploading && (
+      <div className="w-full bg-gray-700">
+        <div 
+          className="bg-green-600 h-2" 
+          style={{ width: `${uploadProgress}%` }}
+        ></div>
+        <p className="text-xs text-white mt-1">上傳中: {uploadProgress}%</p>
+      </div>
+    )}
+
+    {/* 新選擇的圖片預覽 */}
+    {imagePreview && !formData.coverImage && (
+      <div className="mt-2">
+        <p className="text-sm text-white mb-1">新圖片預覽:</p>
+        <img 
+          src={imagePreview} 
+          alt="封面預覽" 
+          className="max-h-40 border border-gray-700"
+        />
+      </div>
+    )}
+
+    {/* 或手動輸入 URL */}
+    <div>
+      <p className="text-sm text-white opacity-70 mb-1">或輸入圖片 URL:</p>
+      <input
+        type="text"
+        name="coverImage"
+        value={formData.coverImage || ''}
+        onChange={handleInputChange}
+        className="kuchiki-input w-full"
+        placeholder="https://example.com/image.jpg"
+      />
+    </div>
+  </div>
+</div>
 
       <div>
         <label className="block text-sm font-light text-white mb-1 tracking-wider">
@@ -624,16 +881,204 @@ export default function AdminPage() {
     </div>
   );
 
+  // Render Gallery Form
+  const renderGalleryForm = () => (
+    <div className="mb-12 bg-gray-900 bg-opacity-40 p-8 border border-gray-800">
+      <h2 className="text-2xl font-light text-white mb-6 tracking-wider">
+        {isEditingGallery ? '編輯圖片' : '新增圖片'}
+      </h2>
+      
+      <form onSubmit={handleGallerySubmit} className="space-y-6">
+        <div>
+          <label htmlFor="gallery-title" className="block text-sm font-light text-white mb-1 tracking-wider">
+            標題
+          </label>
+          <input
+            type="text"
+            id="gallery-title"
+            name="title"
+            value={galleryForm.title}
+            onChange={handleGalleryInputChange}
+            className="kuchiki-input w-full"
+            required
+          />
+        </div>
+        
+        <div>
+          <label htmlFor="gallery-description" className="block text-sm font-light text-white mb-1 tracking-wider">
+            描述
+          </label>
+          <textarea
+            id="gallery-description"
+            name="description"
+            value={galleryForm.description}
+            onChange={handleGalleryInputChange}
+            className="kuchiki-input w-full"
+            rows={3}
+            required
+          />
+        </div>
+        
+        <div>
+          <label htmlFor="gallery-category" className="block text-sm font-light text-white mb-1 tracking-wider">
+            類別
+          </label>
+          <input
+            type="text"
+            id="gallery-category"
+            name="category"
+            value={galleryForm.category}
+            onChange={handleGalleryInputChange}
+            className="kuchiki-input w-full"
+            required
+          />
+        </div>
+        
+        <div>
+          <label htmlFor="gallery-date" className="block text-sm font-light text-white mb-1 tracking-wider">
+            日期
+          </label>
+          <input
+            type="date"
+            id="gallery-date"
+            name="date"
+            value={galleryForm.date}
+            onChange={handleGalleryInputChange}
+            className="kuchiki-input w-full"
+            required
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-light text-white mb-1 tracking-wider">
+            圖片 {isEditingGallery && galleryForm.imageUrl && "(已有上傳圖片)"}
+          </label>
+          
+          {isEditingGallery && galleryForm.imageUrl && (
+            <div className="p-3 bg-gray-800 bg-opacity-50 border border-gray-700 mb-3">
+              <p className="text-sm text-white mb-2">當前圖片:</p>
+              <img 
+                src={galleryForm.imageUrl} 
+                alt="當前圖片" 
+                className="max-h-40 border border-gray-700 mb-2"
+              />
+              <p className="text-xs text-white opacity-70 break-all mb-2">{galleryForm.imageUrl}</p>
+              <button
+                type="button"
+                onClick={() => setGalleryForm(prev => ({ ...prev, imageUrl: '' }))}
+                className="text-red-400 hover:text-red-300 text-xs underline"
+              >
+                移除現有圖片
+              </button>
+            </div>
+          )}
+          
+          <div className="flex items-center gap-2">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageSelect}
+              className="hidden"
+              id="gallery-image-upload"
+            />
+            <label 
+              htmlFor="gallery-image-upload"
+              className="kuchiki-btn cursor-pointer flex items-center gap-2"
+            >
+              <FaUpload size={14} />
+              <span>{isEditingGallery ? '更換圖片' : '選擇圖片'}</span>
+            </label>
+            
+            {imageFile && !isUploading && (
+              <button
+                type="button"
+                onClick={handleGalleryImageUpload}
+                className="kuchiki-btn"
+                disabled={isUploading}
+              >
+                上傳到 Firebase
+              </button>
+            )}
+          </div>
+          
+          {isUploading && (
+            <div className="w-full bg-gray-700 mt-2">
+              <div 
+                className="bg-green-600 h-2" 
+                style={{ width: `${uploadProgress}%` }}
+              ></div>
+              <p className="text-xs text-white mt-1">上傳中: {uploadProgress}%</p>
+            </div>
+          )}
+          
+          {imagePreview && !galleryForm.imageUrl && (
+            <div className="mt-2">
+              <p className="text-sm text-white mb-1">新圖片預覽:</p>
+              <img 
+                src={imagePreview} 
+                alt="圖片預覽" 
+                className="max-h-40 border border-gray-700"
+              />
+            </div>
+          )}
+          
+          <div className="mt-2">
+            <p className="text-sm text-white opacity-70 mb-1">或輸入圖片 URL:</p>
+            <input
+              type="text"
+              name="imageUrl"
+              value={galleryForm.imageUrl}
+              onChange={handleGalleryInputChange}
+              className="kuchiki-input w-full"
+              placeholder="https://example.com/image.jpg"
+            />
+          </div>
+        </div>
+        
+        <div>
+          <label htmlFor="gallery-url" className="block text-sm font-light text-white mb-1 tracking-wider">
+            作品連結 URL (選填)
+          </label>
+          <input
+            type="url"
+            id="gallery-url"
+            name="url"
+            value={galleryForm.url}
+            onChange={handleGalleryInputChange}
+            className="kuchiki-input w-full"
+            placeholder="https://example.com/my-project"
+          />
+        </div>
+        
+        <div className="flex justify-end space-x-4">
+          <button
+            type="button"
+            onClick={handleGalleryCancel}
+            className="kuchiki-btn bg-red-900 hover:bg-red-800"
+          >
+            取消
+          </button>
+          <button
+            type="submit"
+            className="kuchiki-btn"
+          >
+            {isEditingGallery ? '更新圖片' : '新增圖片'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+
   return (
     <div className="bg-black text-white min-h-screen kuchiki-overlay py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <FaLeaf className="inline-block mb-4 text-3xl opacity-60 text-white" />
           <div className="h-px w-24 bg-gradient-to-r from-transparent via-white to-transparent mx-auto mb-6"></div>
-          <h1 className="text-4xl font-light tracking-wider text-white sm:text-5xl lg:text-6xl kuchiki-title">文章管理</h1>
+          <h1 className="text-4xl font-light tracking-wider text-white sm:text-5xl lg:text-6xl kuchiki-title">後台管理</h1>
           <div className="h-px w-24 bg-gradient-to-r from-transparent via-white to-transparent mx-auto mt-6 mb-6"></div>
           <p className="mt-6 max-w-3xl mx-auto text-xl text-white font-light">
-            添加、編輯和管理您的博客文章
+            添加、編輯和管理您的內容
           </p>
         </div>
 
@@ -643,139 +1088,257 @@ export default function AdminPage() {
           </div>
         )}
 
-        {loading ? (
+        {/* Section tabs */}
+        <div className="mb-8 border-b border-gray-800">
+          <div className="flex space-x-8">
+            <button 
+              className={`py-3 px-4 text-lg font-light tracking-wider transition-colors ${
+                activeSection === 'blog' ? 'border-b-2 border-white text-white' : 'text-gray-400 hover:text-white'
+              }`}
+              onClick={() => setActiveSection('blog')}
+            >
+              文章管理
+            </button>
+            <button 
+              className={`py-3 px-4 text-lg font-light tracking-wider transition-colors ${
+                activeSection === 'gallery' ? 'border-b-2 border-white text-white' : 'text-gray-400 hover:text-white'
+              }`}
+              onClick={() => setActiveSection('gallery')}
+            >
+              圖庫管理
+            </button>
+          </div>
+        </div>
+
+        {loading && !isAddingPost && !isAddingGallery ? (
           <div className="flex justify-center items-center h-40">
             <div className="text-white">載入中...</div>
           </div>
         ) : (
           <>
-            {/* 操作按鈕 */}
-            <div className="mb-8 flex justify-end">
-              <button
-                onClick={() => setIsAddingPost(!isAddingPost)}
-                className="kuchiki-btn flex items-center gap-2"
-              >
-                {isAddingPost ? (
-                  '取消'
-                ) : (
-                  <>
-                    <FaPlus size={14} />
-                    <span>新增文章</span>
-                  </>
-                )}
-              </button>
-            </div>
-
-            {/* 添加文章表單 */}
-            {isAddingPost && (
-              <div className="mb-12 bg-gray-900 bg-opacity-40 p-8 border border-gray-800">
-                <h2 className="text-2xl font-light text-white mb-6 tracking-wider">
-                  {isEditing ? '編輯文章' : '新增文章'}
-                </h2>
-
-                <form onSubmit={handleSubmit}>
-                  {activeStep === 1 && renderStep1()}
-                  {activeStep === 2 && renderStep2()}
-                </form>
-              </div>
-            )}
-
-            {/* 文章列表 */}
-            <div className="mb-8">
-              <div className="flex justify-between items-center mb-8">
-                <h2 className="text-2xl font-light text-white tracking-wider">文章列表</h2>
-                <div className="flex items-center">
-                  {currentUser && (
-                    <div className="flex items-center mr-4">
-                      {currentUser.photoURL && (
-                        <img 
-                          src={currentUser.photoURL} 
-                          alt={currentUser.displayName || '管理員'} 
-                          className="h-8 w-8 rounded-full mr-2"
-                        />
-                      )}
-                      <span className="text-white text-sm">
-                        {currentUser.displayName || currentUser.email}
-                      </span>
-                    </div>
-                  )}
-                  <button 
-                    onClick={handleLogout}
-                    className="kuchiki-btn"
+            {/* Blog section */}
+            {activeSection === 'blog' && (
+              <>
+                {/* 操作按鈕 */}
+                <div className="mb-8 flex justify-end">
+                  <button
+                    onClick={isAddingPost ? handleCancel : () => setIsAddingPost(true)}
+                    className="kuchiki-btn flex items-center gap-2"
                   >
-                    登出
+                    {isAddingPost ? (
+                      '取消'
+                    ) : (
+                      <>
+                        <FaPlus size={14} />
+                        <span>新增文章</span>
+                      </>
+                    )}
                   </button>
                 </div>
-              </div>
 
-              <div className="overflow-x-auto">
-                <table className="min-w-full bg-gray-900 bg-opacity-40 border border-gray-800">
-                  <thead>
-                    <tr>
-                      <th className="py-3 px-4 text-left text-xs font-medium tracking-wider text-white opacity-80">標題</th>
-                      <th className="py-3 px-4 text-left text-xs font-medium tracking-wider text-white opacity-80">類別</th>
-                      <th className="py-3 px-4 text-left text-xs font-medium tracking-wider text-white opacity-80">日期</th>
-                      <th className="py-3 px-4 text-right text-xs font-medium tracking-wider text-white opacity-80">操作</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-800">
-                    {posts.length > 0 ? (
-                      posts.map(post => (
-                        <tr key={post.id} className="hover:bg-gray-800 transition-colors duration-150">
-                          <td className="py-3 px-4 text-sm text-white">
-                            {post.title}
-                          </td>
-                          <td className="py-3 px-4 text-sm text-white">
-                            {post.category || '-'}
-                          </td>
-                          <td className="py-3 px-4 text-sm text-white">
-                            {post.publishedDate instanceof Date
-                              ? post.publishedDate.toLocaleDateString('zh-TW')
-                              : post.publishedDate}
-                          </td>
-                          <td className="py-3 px-4 text-sm text-right">
-                            <button
-                              onClick={() => handleEditPost(post)}
-                              className="text-blue-400 hover:text-blue-300 transition-colors ml-2"
-                              title="編輯文章"
-                            >
-                              <FaEdit size={16} />
-                            </button>
-                            <button
-                              onClick={() => handleArchivePost(post)}
-                              className="text-yellow-400 hover:text-yellow-300 transition-colors ml-2"
-                              title={post.archived ? '取消典藏' : '典藏文章'}
-                            >
-                              <FaArchive size={16} />
-                            </button>
-                            <button
-                              onClick={() => handleSetFeaturedPost(post)}
-                              className={`text-yellow-400 hover:text-yellow-300 transition-colors ml-2 ${featuredPostId === post.id ? 'text-yellow-500' : ''}`}
-                              title={featuredPostId === post.id ? '取消精選' : '設為精選'}
-                            >
-                              <FaStar size={16} />
-                            </button>
-                            <button
-                              onClick={() => handleDeletePost(post.id)}
-                              className="text-red-400 hover:text-red-300 transition-colors ml-2"
-                              title="刪除文章"
-                            >
-                              <FaTrash size={16} />
-                            </button>
-                          </td>
+                {/* 添加文章表單 */}
+                {isAddingPost && (
+                  <div className="mb-12 bg-gray-900 bg-opacity-40 p-8 border border-gray-800">
+                    <h2 className="text-2xl font-light text-white mb-6 tracking-wider">
+                      {isEditing ? '編輯文章' : '新增文章'}
+                    </h2>
+
+                    <form onSubmit={handleSubmit}>
+                      {activeStep === 1 && renderStep1()}
+                      {activeStep === 2 && renderStep2()}
+                    </form>
+                  </div>
+                )}
+
+                {/* 文章列表 */}
+                <div className="mb-8">
+                  <div className="flex justify-between items-center mb-8">
+                    <h2 className="text-2xl font-light text-white tracking-wider">文章列表</h2>
+                    <div className="flex items-center">
+                      {currentUser && (
+                        <div className="flex items-center mr-4">
+                          {currentUser.photoURL && (
+                            <img 
+                              src={currentUser.photoURL} 
+                              alt={currentUser.displayName || '管理員'} 
+                              className="h-8 w-8 rounded-full mr-2"
+                            />
+                          )}
+                          <span className="text-white text-sm">
+                            {currentUser.displayName || currentUser.email}
+                          </span>
+                        </div>
+                      )}
+                      <button 
+                        onClick={handleLogout}
+                        className="kuchiki-btn"
+                      >
+                        登出
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full bg-gray-900 bg-opacity-40 border border-gray-800">
+                      <thead>
+                        <tr>
+                          <th className="py-3 px-4 text-left text-xs font-medium tracking-wider text-white opacity-80">標題</th>
+                          <th className="py-3 px-4 text-left text-xs font-medium tracking-wider text-white opacity-80">類別</th>
+                          <th className="py-3 px-4 text-left text-xs font-medium tracking-wider text-white opacity-80">日期</th>
+                          <th className="py-3 px-4 text-right text-xs font-medium tracking-wider text-white opacity-80">操作</th>
                         </tr>
-                      ))
+                      </thead>
+                      <tbody className="divide-y divide-gray-800">
+                        {posts.length > 0 ? (
+                          posts.map(post => (
+                            <tr key={post.id} className="hover:bg-gray-800 transition-colors duration-150">
+                              <td className="py-3 px-4 text-sm text-white">
+                                {post.title}
+                              </td>
+                              <td className="py-3 px-4 text-sm text-white">
+                                {post.category || '-'}
+                              </td>
+                              <td className="py-3 px-4 text-sm text-white">
+                                {post.publishedDate instanceof Date
+                                  ? post.publishedDate.toLocaleDateString('zh-TW')
+                                  : post.publishedDate}
+                              </td>
+                              <td className="py-3 px-4 text-sm text-right">
+                                <button
+                                  onClick={() => handleEditPost(post)}
+                                  className="text-blue-400 hover:text-blue-300 transition-colors ml-2"
+                                  title="編輯文章"
+                                >
+                                  <FaEdit size={16} />
+                                </button>
+                                <button
+                                  onClick={() => handleArchivePost(post)}
+                                  className="text-yellow-400 hover:text-yellow-300 transition-colors ml-2"
+                                  title={post.archived ? '取消典藏' : '典藏文章'}
+                                >
+                                  <FaArchive size={16} />
+                                </button>
+                                <button
+                                  onClick={() => handleSetFeaturedPost(post)}
+                                  className={`text-yellow-400 hover:text-yellow-300 transition-colors ml-2 ${featuredPostId === post.id ? 'text-yellow-500' : ''}`}
+                                  title={featuredPostId === post.id ? '取消精選' : '設為精選'}
+                                >
+                                  <FaStar size={16} />
+                                </button>
+                                <button
+                                  onClick={() => handleDeletePost(post.id)}
+                                  className="text-red-400 hover:text-red-300 transition-colors ml-2"
+                                  title="刪除文章"
+                                >
+                                  <FaTrash size={16} />
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={5} className="py-4 px-4 text-center text-white">
+                              沒有找到文章。您可以點擊上方的「新增文章」按鈕創建您的第一篇文章。
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Gallery section */}
+            {activeSection === 'gallery' && (
+              <>
+                {/* Gallery action buttons */}
+                <div className="mb-8 flex justify-end">
+                  <button
+                    onClick={isAddingGallery ? handleGalleryCancel : () => setIsAddingGallery(true)}
+                    className="kuchiki-btn flex items-center gap-2"
+                  >
+                    {isAddingGallery ? (
+                      '取消'
                     ) : (
-                      <tr>
-                        <td colSpan={5} className="py-4 px-4 text-center text-white">
-                          沒有找到文章。您可以點擊上方的「新增文章」按鈕創建您的第一篇文章。
-                        </td>
-                      </tr>
+                      <>
+                        <FaPlus size={14} />
+                        <span>新增圖片</span>
+                      </>
                     )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+                  </button>
+                </div>
+
+                {/* Gallery form */}
+                {isAddingGallery && renderGalleryForm()}
+
+                {/* Gallery items list */}
+                <div className="mb-8">
+                  <h2 className="text-2xl font-light text-white tracking-wider mb-8">圖庫列表</h2>
+                  
+                  {galleryItems.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {galleryItems.map(item => (
+                        <div 
+                          key={item.id} 
+                          className="bg-gray-900 bg-opacity-40 border border-gray-800 overflow-hidden"
+                        >
+                          <div className="aspect-w-16 aspect-h-9 relative">
+                            <img
+                              src={item.imageUrl}
+                              alt={item.title}
+                              className="w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-40 transition-opacity flex items-center justify-center gap-4 opacity-0 hover:opacity-100">
+                              <button
+                                onClick={() => handleEditGallery(item)}
+                                className="p-2 bg-blue-900 text-white rounded-full"
+                              >
+                                <FaEdit size={16} />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteGallery(item.id)}
+                                className="p-2 bg-red-900 text-white rounded-full"
+                              >
+                                <FaTrash size={16} />
+                              </button>
+                            </div>
+                          </div>
+                          <div className="p-4">
+                            <h3 className="text-lg font-light text-white">{item.title}</h3>
+                            <p className="text-sm text-white opacity-70 mt-1 whitespace-pre-line">{item.description}</p>
+                            <div className="flex justify-between items-center mt-3">
+                              <span className="text-xs text-white opacity-60">{item.date}</span>
+                              <span className="text-xs bg-gray-800 px-2 py-1 text-white opacity-80">
+                                {item.category}
+                              </span>
+                            </div>
+                            {item.url && (
+                              <div className="mt-2 text-xs text-white opacity-60">
+                                <span>作品連結: </span>
+                                <a 
+                                  href={item.url} 
+                                  target="_blank" 
+                                  rel="noreferrer"
+                                  className="underline hover:text-blue-400"
+                                >
+                                  {item.url.length > 30 ? item.url.slice(0, 30) + '...' : item.url}
+                                </a>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12 border border-gray-800 bg-gray-900 bg-opacity-40">
+                      <FaImages size={48} className="mx-auto text-white opacity-30 mb-4" />
+                      <p className="text-white">尚無圖片。點擊「新增圖片」按鈕來添加。</p>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </>
         )}
       </div>
