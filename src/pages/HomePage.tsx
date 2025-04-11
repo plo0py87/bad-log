@@ -65,7 +65,7 @@ export default function HomePage() {
             <p className="mt-6 max-w-3xl mx-auto text-xl text-white font-light">
             Bad Log，簡寫就是blog，歡迎來到我的blog
               <br />
-              <span className="text-sm opacity-75">生活、想法、技術筆記</span>
+              <span className="text-sm opacity-75"></span>
             </p>
           </div>
         </div>

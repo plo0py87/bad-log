@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { BlogPost } from '../types/blog';
 import BlogList from '../features/blog/components/BlogList';
 import { getAllPosts, initializeFirebaseData } from '../services/blogService';
-import { FaSearch } from 'react-icons/fa';
+import { FaSearch, FaArchive } from 'react-icons/fa';
 
 export default function BlogPage() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -46,9 +46,14 @@ export default function BlogPage() {
     return Array.from(uniqueCategories);
   }, [posts]);
 
-  // Filter posts based on search and category
+  // Filter posts based on search, category, and archive status
   const filteredPosts = useMemo(() => {
     return posts.filter(post => {
+      // Filter by archive status - explicitly check for true
+      if (post.archived === true) {
+        return false;
+      }
+
       // Filter by search query
       const matchesSearch = searchQuery === '' ||
         post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -72,7 +77,7 @@ export default function BlogPage() {
           </h1>
           <div className="h-px w-24 bg-gradient-to-r from-transparent via-white to-transparent mx-auto mt-4 mb-6"></div>
           <p className="mt-3 max-w-2xl mx-auto text-lg text-white opacity-80 font-light">
-            你聽見了嗎 我在這裡歌唱
+          "The pen is mightier than the sword."
           </p>
         </div>
 
@@ -95,14 +100,16 @@ export default function BlogPage() {
                   <label htmlFor="search" className="block text-sm font-light text-white mb-1 tracking-wider">
                     搜尋
                   </label>
-                  <input
-                    type="text"
-                    id="search"
-                    className="kuchiki-input w-full"
-                    placeholder="搜尋文章..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      id="search"
+                      className="kuchiki-input w-full pl-10"
+                      placeholder="搜尋文章..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </div>
                 </div>
 
                 {/* Category Filter */}

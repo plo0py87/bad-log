@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
   addPost, 
   getAllPosts, 
@@ -87,6 +87,12 @@ export default function AdminPage() {
     date: new Date().toISOString().split('T')[0],
     url: '', // Add URL field
   });
+
+  // 添加一個 ref 來引用文本區域
+  const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
+  
+  // 添加一個狀態來追踪當前正在上傳的是哪種類型的圖片
+  const [imageUploadType, setImageUploadType] = useState<'cover' | 'content' | 'gallery'>('cover');
 
   // 初始加載數據
   useEffect(() => {
@@ -391,6 +397,13 @@ export default function AdminPage() {
       const file = e.target.files[0];
       setImageFile(file);
       
+      // 根據當前操作的部分設置上傳類型
+      if (activeSection === 'gallery' && isAddingGallery) {
+        setImageUploadType('gallery');
+      } else {
+        setImageUploadType('cover');
+      }
+      
       // 生成預覽
       const reader = new FileReader();
       reader.onload = () => {
@@ -410,11 +423,11 @@ export default function AdminPage() {
       
       const storage = getStorage();
       const timestamp = new Date().getTime();
-      const storageRef = ref(storage, `blog-images/${timestamp}_${imageFile.name}`);
+      const folder = imageUploadType === 'gallery' ? 'gallery-images' : 'blog-images';
+      const storageRef = ref(storage, `${folder}/${timestamp}_${imageFile.name}`);
       
       const uploadTask = uploadBytesResumable(storageRef, imageFile);
       
-      // 使用 Promise 包装上传过程，以便能够使用 await
       await new Promise<void>((resolve, reject) => {
         uploadTask.on(
           'state_changed',
@@ -434,10 +447,19 @@ export default function AdminPage() {
           async () => {
             // 上傳完成，獲取下載 URL
             const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-            setFormData(prev => ({
-              ...prev,
-              coverImage: downloadURL
-            }));
+            
+            if (imageUploadType === 'gallery') {
+              setGalleryForm(prev => ({
+                ...prev,
+                imageUrl: downloadURL
+              }));
+            } else {
+              setFormData(prev => ({
+                ...prev,
+                coverImage: downloadURL
+              }));
+            }
+            
             setIsUploading(false);
             resolve();
           }
@@ -448,6 +470,91 @@ export default function AdminPage() {
       setError('上傳圖片時發生錯誤');
       setIsUploading(false);
     }
+  };
+
+  // 處理在內容中插入圖片
+  const handleContentImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setImageFile(file);
+      setImageUploadType('content');
+      
+      // 上傳圖片
+      uploadContentImage(file);
+    }
+  };
+
+  // 上傳內容圖片到 Firebase Storage 並插入 Markdown
+  const uploadContentImage = async (file: File) => {
+    try {
+      setIsUploading(true);
+      setUploadProgress(0);
+      
+      const storage = getStorage();
+      const timestamp = new Date().getTime();
+      const storageRef = ref(storage, `content-images/${timestamp}_${file.name}`);
+      
+      const uploadTask = uploadBytesResumable(storageRef, file);
+      
+      await new Promise<void>((resolve, reject) => {
+        uploadTask.on(
+          'state_changed',
+          (snapshot) => {
+            // 更新上傳進度
+            const progress = Math.round(
+              (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+            );
+            setUploadProgress(progress);
+          },
+          (error) => {
+            console.error('上傳錯誤:', error);
+            setError('上傳圖片時發生錯誤');
+            setIsUploading(false);
+            reject(error);
+          },
+          async () => {
+            // 上傳完成，獲取下載 URL
+            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+            
+            // 在文本區域插入 Markdown 圖片語法
+            insertImageMarkdown(downloadURL, file.name);
+            
+            setIsUploading(false);
+            resolve();
+          }
+        );
+      });
+    } catch (err) {
+      console.error('上傳過程錯誤:', err);
+      setError('上傳圖片時發生錯誤');
+      setIsUploading(false);
+    }
+  };
+
+  // 在文本內容的光標位置插入 Markdown 圖片語法
+  const insertImageMarkdown = (imageUrl: string, fileName: string) => {
+    if (!contentTextareaRef.current) return;
+    
+    const textarea = contentTextareaRef.current;
+    const start = textarea.selectionStart || 0;
+    const end = textarea.selectionEnd || 0;
+    const markdownImage = `![${fileName}](${imageUrl})`;
+    
+    // 獲取當前內容並在光標位置插入圖片 Markdown
+    const content = textarea.value;
+    const newContent = content.substring(0, start) + markdownImage + content.substring(end);
+    
+    // 更新表單內容
+    setFormData(prev => ({
+      ...prev,
+      content: newContent
+    }));
+    
+    // 重新設置光標位置到插入的內容之後
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start + markdownImage.length, start + markdownImage.length);
+    }, 0);
   };
 
   // Handle gallery form input changes
@@ -461,49 +568,8 @@ export default function AdminPage() {
 
   // Handle gallery image upload
   const handleGalleryImageUpload = async () => {
-    if (!imageFile) return;
-    
-    try {
-      setIsUploading(true);
-      setUploadProgress(0);
-      
-      const storage = getStorage();
-      const timestamp = new Date().getTime();
-      const storageRef = ref(storage, `gallery-images/${timestamp}_${imageFile.name}`);
-      
-      const uploadTask = uploadBytesResumable(storageRef, imageFile);
-      
-      await new Promise<void>((resolve, reject) => {
-        uploadTask.on(
-          'state_changed',
-          (snapshot) => {
-            const progress = Math.round(
-              (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-            );
-            setUploadProgress(progress);
-          },
-          (error) => {
-            console.error('上傳錯誤:', error);
-            setError('上傳圖片時發生錯誤');
-            setIsUploading(false);
-            reject(error);
-          },
-          async () => {
-            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-            setGalleryForm(prev => ({
-              ...prev,
-              imageUrl: downloadURL
-            }));
-            setIsUploading(false);
-            resolve();
-          }
-        );
-      });
-    } catch (err) {
-      console.error('上傳過程錯誤:', err);
-      setError('上傳圖片時發生錯誤');
-      setIsUploading(false);
-    }
+    setImageUploadType('gallery');
+    await handleImageUpload();
   };
 
   // Handle gallery submission
@@ -837,14 +903,46 @@ export default function AdminPage() {
         <label className="block text-sm font-light text-white mb-1 tracking-wider">
           文章內容 (支持 Markdown)
         </label>
-        <button
-          type="button"
-          onClick={() => setPreviewMode(!previewMode)}
-          className="text-sm underline text-white opacity-80 hover:opacity-100"
-        >
-          {previewMode ? '返回編輯' : '預覽'}
-        </button>
+        <div className="flex space-x-2">
+          {/* 添加插入圖片按鈕 */}
+          {!previewMode && (
+            <div className="relative">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleContentImageSelect}
+                className="hidden"
+                id="content-image-upload"
+              />
+              <label 
+                htmlFor="content-image-upload"
+                className="kuchiki-btn cursor-pointer flex items-center gap-2"
+              >
+                <FaUpload size={14} />
+                <span>插入圖片</span>
+              </label>
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={() => setPreviewMode(!previewMode)}
+            className="text-sm underline text-white opacity-80 hover:opacity-100"
+          >
+            {previewMode ? '返回編輯' : '預覽'}
+          </button>
+        </div>
       </div>
+
+      {/* 顯示內容圖片上傳進度 */}
+      {isUploading && imageUploadType === 'content' && (
+        <div className="w-full bg-gray-700 mb-2">
+          <div 
+            className="bg-green-600 h-2" 
+            style={{ width: `${uploadProgress}%` }}
+          ></div>
+          <p className="text-xs text-white mt-1">上傳中: {uploadProgress}%</p>
+        </div>
+      )}
 
       {previewMode ? (
         <div
@@ -859,6 +957,7 @@ export default function AdminPage() {
           className="kuchiki-input w-full"
           rows={15}
           required
+          ref={contentTextareaRef}
         />
       )}
 
@@ -1105,7 +1204,7 @@ export default function AdminPage() {
               }`}
               onClick={() => setActiveSection('gallery')}
             >
-              圖庫管理
+              作品管理
             </button>
           </div>
         </div>
@@ -1263,7 +1362,7 @@ export default function AdminPage() {
                     ) : (
                       <>
                         <FaPlus size={14} />
-                        <span>新增圖片</span>
+                        <span>新增作品</span>
                       </>
                     )}
                   </button>
@@ -1274,7 +1373,7 @@ export default function AdminPage() {
 
                 {/* Gallery items list */}
                 <div className="mb-8">
-                  <h2 className="text-2xl font-light text-white tracking-wider mb-8">圖庫列表</h2>
+                  <h2 className="text-2xl font-light text-white tracking-wider mb-8">作品列表</h2>
                   
                   {galleryItems.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

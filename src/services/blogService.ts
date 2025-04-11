@@ -60,7 +60,8 @@ const convertFirestoreDocToPost = (doc: DocumentData): BlogPost => {
     publishedDate: data.publishedDate ? data.publishedDate.toDate() : new Date(),
     coverImage: data.coverImage || '',
     category: data.category || '',
-    tags: data.tags || []
+    tags: data.tags || [],
+    archived: data.archived || false
   };
 };
 
