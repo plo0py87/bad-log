@@ -14,10 +14,12 @@ import { BlogPost } from '../types/blog';
 // Add GalleryItem type
 import { GalleryItem } from '../types/gallery';
 // Add FaImages icon
-import { FaLeaf, FaPlus, FaTrash, FaEdit, FaUpload, FaArchive, FaStar, FaImages } from 'react-icons/fa';
+import { FaEnvelope, FaCheck, FaBan, FaTrash, FaDownload , FaPlus, FaEdit, FaUpload, FaArchive, FaStar, FaImages } from 'react-icons/fa';
 import { marked } from 'marked';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { useAuth } from '../context/AuthContext';
+// Add newsletter service imports
+import { getAllSubscribers, updateSubscriberStatus, deleteSubscriber, NewsletterSubscriber } from '../services/newsletterService';
 
 export default function AdminPage() {
   const [loading, setLoading] = useState(true);
@@ -44,13 +46,10 @@ export default function AdminPage() {
 
   // 標籤輸入
   const [tagInput, setTagInput] = useState('');
-
-  // 新增圖片上傳狀態
-  const [imageFile, setImageFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-
+  const [imageFile, setImageFile] = useState<File | null>(null);
   // Add a state to track the currently edited post
   const [currentPostId, setCurrentPostId] = useState<string | null>(null);
 
@@ -70,7 +69,7 @@ export default function AdminPage() {
   };
 
   // Add state for managing active section
-  const [activeSection, setActiveSection] = useState<'blog' | 'gallery'>('blog');
+  const [activeSection, setActiveSection] = useState<'blog' | 'gallery' | 'subscribers'>('blog');
   
   // Add state for gallery items
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
@@ -93,6 +92,10 @@ export default function AdminPage() {
   
   // 添加一個狀態來追踪當前正在上傳的是哪種類型的圖片
   const [imageUploadType, setImageUploadType] = useState<'cover' | 'content' | 'gallery'>('cover');
+
+  // 添加訂閱者相關狀態
+  const [subscribers, setSubscribers] = useState<NewsletterSubscriber[]>([]);
+  const [isLoadingSubscribers, setIsLoadingSubscribers] = useState(false);
 
   // 初始加載數據
   useEffect(() => {
@@ -125,6 +128,27 @@ export default function AdminPage() {
 
     fetchData();
   }, []);
+
+  // 載入訂閱者列表
+  const loadSubscribers = async () => {
+    try {
+      setIsLoadingSubscribers(true);
+      const fetchedSubscribers = await getAllSubscribers();
+      setSubscribers(fetchedSubscribers);
+    } catch (err) {
+      setError('載入訂閱者列表時發生錯誤');
+      console.error(err);
+    } finally {
+      setIsLoadingSubscribers(false);
+    }
+  };
+
+  // 當切換到訂閱者部分時載入數據
+  useEffect(() => {
+    if (activeSection === 'subscribers') {
+      loadSubscribers();
+    }
+  }, [activeSection]);
 
   // 處理表單輸入變更
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -683,6 +707,84 @@ export default function AdminPage() {
     }
   };
 
+  // 處理訂閱者狀態更改
+  const handleToggleSubscriberStatus = async (subscriber: NewsletterSubscriber) => {
+    try {
+      if (!subscriber.id) return;
+      
+      const newStatus = !subscriber.active;
+      const success = await updateSubscriberStatus(subscriber.id, newStatus);
+      
+      if (success) {
+        // 更新本地狀態
+        setSubscribers(prev => 
+          prev.map(s => s.id === subscriber.id ? {...s, active: newStatus} : s)
+        );
+        setError(null);
+      } else {
+        setError('更新訂閱者狀態時發生錯誤');
+      }
+    } catch (err) {
+      setError('更新訂閱者狀態時發生錯誤');
+      console.error(err);
+    }
+  };
+
+  // 處理刪除訂閱者
+  const handleDeleteSubscriber = async (subscriberId: string) => {
+    if (!window.confirm('確定要刪除此訂閱者嗎？此操作無法撤銷。')) {
+      return;
+    }
+    
+    try {
+      const success = await deleteSubscriber(subscriberId);
+      
+      if (success) {
+        // 從本地狀態中移除
+        setSubscribers(prev => prev.filter(s => s.id !== subscriberId));
+        setError(null);
+      } else {
+        setError('刪除訂閱者時發生錯誤');
+      }
+    } catch (err) {
+      setError('刪除訂閱者時發生錯誤');
+      console.error(err);
+    }
+  };
+
+  // 導出訂閱者列表為 CSV
+  const exportSubscribersToCSV = () => {
+    // 只包含活躍的訂閱者
+    const activeSubscribers = subscribers.filter(s => s.active);
+    
+    if (activeSubscribers.length === 0) {
+      alert('沒有活躍的訂閱者可導出');
+      return;
+    }
+    
+    // 創建 CSV 內容
+    const csvContent = [
+      ['電子郵件', '訂閱日期'],
+      ...activeSubscribers.map(s => [
+        s.email,
+        s.subscribeDate.toLocaleDateString('zh-TW')
+      ])
+    ]
+      .map(row => row.join(','))
+      .join('\n');
+    
+    // 創建下載連結
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `subscribers-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   // 渲染步驟 1：基本信息
   const renderStep1 = () => (
     <div className="space-y-6">
@@ -1168,278 +1270,402 @@ export default function AdminPage() {
     </div>
   );
 
-  return (
-    <div className="bg-black text-white min-h-screen kuchiki-overlay py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <FaLeaf className="inline-block mb-4 text-3xl opacity-60 text-white" />
-          <div className="h-px w-24 bg-gradient-to-r from-transparent via-white to-transparent mx-auto mb-6"></div>
-          <h1 className="text-4xl font-light tracking-wider text-white sm:text-5xl lg:text-6xl kuchiki-title">後台管理</h1>
-          <div className="h-px w-24 bg-gradient-to-r from-transparent via-white to-transparent mx-auto mt-6 mb-6"></div>
-          <p className="mt-6 max-w-3xl mx-auto text-xl text-white font-light">
-            添加、編輯和管理您的內容
-          </p>
+  // 渲染訂閱者管理部分
+  const renderSubscriberManagement = () => (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-light text-white tracking-wider">訂閱者管理</h2>
+        <button
+          onClick={exportSubscribersToCSV}
+          className="kuchiki-btn flex items-center gap-2"
+          disabled={isLoadingSubscribers || subscribers.length === 0}
+        >
+          <FaDownload size={14} />
+          <span>導出 CSV</span>
+        </button>
+      </div>
+      
+      {isLoadingSubscribers ? (
+        <div className="flex justify-center py-8">
+          <p className="text-white opacity-70">載入訂閱者...</p>
         </div>
-
-        {error && (
-          <div className="bg-red-900 bg-opacity-30 border border-red-800 p-4 mb-6 text-white">
-            {error}
-          </div>
-        )}
-
-        {/* Section tabs */}
-        <div className="mb-8 border-b border-gray-800">
-          <div className="flex space-x-8">
-            <button 
-              className={`py-3 px-4 text-lg font-light tracking-wider transition-colors ${
-                activeSection === 'blog' ? 'border-b-2 border-white text-white' : 'text-gray-400 hover:text-white'
-              }`}
-              onClick={() => setActiveSection('blog')}
-            >
-              文章管理
-            </button>
-            <button 
-              className={`py-3 px-4 text-lg font-light tracking-wider transition-colors ${
-                activeSection === 'gallery' ? 'border-b-2 border-white text-white' : 'text-gray-400 hover:text-white'
-              }`}
-              onClick={() => setActiveSection('gallery')}
-            >
-              作品管理
-            </button>
-          </div>
+      ) : subscribers.length === 0 ? (
+        <div className="text-center py-8">
+          <p className="text-white opacity-70">目前沒有訂閱者</p>
         </div>
-
-        {loading && !isAddingPost && !isAddingGallery ? (
-          <div className="flex justify-center items-center h-40">
-            <div className="text-white">載入中...</div>
-          </div>
-        ) : (
-          <>
-            {/* Blog section */}
-            {activeSection === 'blog' && (
-              <>
-                {/* 操作按鈕 */}
-                <div className="mb-8 flex justify-end">
-                  <button
-                    onClick={isAddingPost ? handleCancel : () => setIsAddingPost(true)}
-                    className="kuchiki-btn flex items-center gap-2"
-                  >
-                    {isAddingPost ? (
-                      '取消'
-                    ) : (
-                      <>
-                        <FaPlus size={14} />
-                        <span>新增文章</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-
-                {/* 添加文章表單 */}
-                {isAddingPost && (
-                  <div className="mb-12 bg-gray-900 bg-opacity-40 p-8 border border-gray-800">
-                    <h2 className="text-2xl font-light text-white mb-6 tracking-wider">
-                      {isEditing ? '編輯文章' : '新增文章'}
-                    </h2>
-
-                    <form onSubmit={handleSubmit}>
-                      {activeStep === 1 && renderStep1()}
-                      {activeStep === 2 && renderStep2()}
-                    </form>
-                  </div>
-                )}
-
-                {/* 文章列表 */}
-                <div className="mb-8">
-                  <div className="flex justify-between items-center mb-8">
-                    <h2 className="text-2xl font-light text-white tracking-wider">文章列表</h2>
-                    <div className="flex items-center">
-                      {currentUser && (
-                        <div className="flex items-center mr-4">
-                          {currentUser.photoURL && (
-                            <img 
-                              src={currentUser.photoURL} 
-                              alt={currentUser.displayName || '管理員'} 
-                              className="h-8 w-8 rounded-full mr-2"
-                            />
-                          )}
-                          <span className="text-white text-sm">
-                            {currentUser.displayName || currentUser.email}
-                          </span>
-                        </div>
-                      )}
-                      <button 
-                        onClick={handleLogout}
-                        className="kuchiki-btn"
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm text-left text-white">
+            <thead className="text-xs uppercase bg-gray-900 bg-opacity-40">
+              <tr>
+                <th scope="col" className="px-6 py-3">電子郵件</th>
+                <th scope="col" className="px-6 py-3">訂閱日期</th>
+                <th scope="col" className="px-6 py-3">狀態</th>
+                <th scope="col" className="px-6 py-3">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {subscribers.map((subscriber) => (
+                <tr 
+                  key={subscriber.id} 
+                  className="border-b border-gray-800 hover:bg-gray-900 hover:bg-opacity-40"
+                >
+                  <td className="px-6 py-4">
+                    <div className="flex items-center space-x-2">
+                      <FaEnvelope className="text-gray-400" />
+                      <span>{subscriber.email}</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    {subscriber.subscribeDate.toLocaleDateString('zh-TW')}
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`px-2 py-1 text-xs rounded ${
+                      subscriber.active 
+                        ? 'bg-green-900 bg-opacity-40 text-green-400' 
+                        : 'bg-red-900 bg-opacity-40 text-red-400'
+                    }`}>
+                      {subscriber.active ? '活躍' : '非活躍'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => handleToggleSubscriberStatus(subscriber)}
+                        className={`p-1 rounded hover:bg-gray-700 ${
+                          subscriber.active 
+                            ? 'text-red-400 hover:text-red-300' 
+                            : 'text-green-400 hover:text-green-300'
+                        }`}
+                        title={subscriber.active ? '停用' : '啟用'}
                       >
-                        登出
+                        {subscriber.active ? <FaBan size={16} /> : <FaCheck size={16} />}
+                      </button>
+                      <button
+                        onClick={() => handleDeleteSubscriber(subscriber.id!)}
+                        className="p-1 rounded hover:bg-gray-700 text-red-400 hover:text-red-300"
+                        title="刪除"
+                      >
+                        <FaTrash size={16} />
                       </button>
                     </div>
-                  </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
 
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full bg-gray-900 bg-opacity-40 border border-gray-800">
-                      <thead>
-                        <tr>
-                          <th className="py-3 px-4 text-left text-xs font-medium tracking-wider text-white opacity-80">標題</th>
-                          <th className="py-3 px-4 text-left text-xs font-medium tracking-wider text-white opacity-80">類別</th>
-                          <th className="py-3 px-4 text-left text-xs font-medium tracking-wider text-white opacity-80">日期</th>
-                          <th className="py-3 px-4 text-right text-xs font-medium tracking-wider text-white opacity-80">操作</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-800">
-                        {posts.length > 0 ? (
-                          posts.map(post => (
-                            <tr key={post.id} className="hover:bg-gray-800 transition-colors duration-150">
-                              <td className="py-3 px-4 text-sm text-white">
-                                {post.title}
-                              </td>
-                              <td className="py-3 px-4 text-sm text-white">
-                                {post.category || '-'}
-                              </td>
-                              <td className="py-3 px-4 text-sm text-white">
-                                {post.publishedDate instanceof Date
-                                  ? post.publishedDate.toLocaleDateString('zh-TW')
-                                  : post.publishedDate}
-                              </td>
-                              <td className="py-3 px-4 text-sm text-right">
-                                <button
-                                  onClick={() => handleEditPost(post)}
-                                  className="text-blue-400 hover:text-blue-300 transition-colors ml-2"
-                                  title="編輯文章"
-                                >
-                                  <FaEdit size={16} />
-                                </button>
-                                <button
-                                  onClick={() => handleArchivePost(post)}
-                                  className="text-yellow-400 hover:text-yellow-300 transition-colors ml-2"
-                                  title={post.archived ? '取消典藏' : '典藏文章'}
-                                >
-                                  <FaArchive size={16} />
-                                </button>
-                                <button
-                                  onClick={() => handleSetFeaturedPost(post)}
-                                  className={`text-yellow-400 hover:text-yellow-300 transition-colors ml-2 ${featuredPostId === post.id ? 'text-yellow-500' : ''}`}
-                                  title={featuredPostId === post.id ? '取消精選' : '設為精選'}
-                                >
-                                  <FaStar size={16} />
-                                </button>
-                                <button
-                                  onClick={() => handleDeletePost(post.id)}
-                                  className="text-red-400 hover:text-red-300 transition-colors ml-2"
-                                  title="刪除文章"
-                                >
-                                  <FaTrash size={16} />
-                                </button>
-                              </td>
-                            </tr>
-                          ))
-                        ) : (
-                          <tr>
-                            <td colSpan={5} className="py-4 px-4 text-center text-white">
-                              沒有找到文章。您可以點擊上方的「新增文章」按鈕創建您的第一篇文章。
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </>
+  // 渲染步驟 1：基本信息
+  const renderBlogManagement = () => (
+    <>
+      {/* 操作按鈕 */}
+      <div className="mb-8 flex justify-end">
+        <button
+          onClick={isAddingPost ? handleCancel : () => setIsAddingPost(true)}
+          className="kuchiki-btn flex items-center gap-2"
+        >
+          {isAddingPost ? (
+            '取消'
+          ) : (
+            <>
+              <FaPlus size={14} />
+              <span>新增文章</span>
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* 添加文章表單 */}
+      {isAddingPost && (
+        <div className="mb-12 bg-gray-900 bg-opacity-40 p-8 border border-gray-800">
+          <h2 className="text-2xl font-light text-white mb-6 tracking-wider">
+            {isEditing ? '編輯文章' : '新增文章'}
+          </h2>
+
+          <form onSubmit={handleSubmit}>
+            {activeStep === 1 && renderStep1()}
+            {activeStep === 2 && renderStep2()}
+          </form>
+        </div>
+      )}
+
+      {/* 文章列表 */}
+      <div className="mb-8">
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-2xl font-light text-white tracking-wider">文章列表</h2>
+          <div className="flex items-center">
+            {currentUser && (
+              <div className="flex items-center mr-4">
+                {currentUser.photoURL && (
+                  <img 
+                    src={currentUser.photoURL} 
+                    alt={currentUser.displayName || '管理員'} 
+                    className="h-8 w-8 rounded-full mr-2"
+                  />
+                )}
+                <span className="text-white text-sm">
+                  {currentUser.displayName || currentUser.email}
+                </span>
+              </div>
             )}
+            <button 
+              onClick={handleLogout}
+              className="kuchiki-btn"
+            >
+              登出
+            </button>
+          </div>
+        </div>
 
-            {/* Gallery section */}
-            {activeSection === 'gallery' && (
-              <>
-                {/* Gallery action buttons */}
-                <div className="mb-8 flex justify-end">
-                  <button
-                    onClick={isAddingGallery ? handleGalleryCancel : () => setIsAddingGallery(true)}
-                    className="kuchiki-btn flex items-center gap-2"
-                  >
-                    {isAddingGallery ? (
-                      '取消'
-                    ) : (
-                      <>
-                        <FaPlus size={14} />
-                        <span>新增作品</span>
-                      </>
-                    )}
-                  </button>
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-gray-900 bg-opacity-40 border border-gray-800">
+            <thead>
+              <tr>
+                <th className="py-3 px-4 text-left text-xs font-medium tracking-wider text-white opacity-80">標題</th>
+                <th className="py-3 px-4 text-left text-xs font-medium tracking-wider text-white opacity-80">類別</th>
+                <th className="py-3 px-4 text-left text-xs font-medium tracking-wider text-white opacity-80">日期</th>
+                <th className="py-3 px-4 text-right text-xs font-medium tracking-wider text-white opacity-80">操作</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-800">
+              {posts.length > 0 ? (
+                posts.map(post => (
+                  <tr key={post.id} className="hover:bg-gray-800 transition-colors duration-150">
+                    <td className="py-3 px-4 text-sm text-white">
+                      {post.title}
+                    </td>
+                    <td className="py-3 px-4 text-sm text-white">
+                      {post.category || '-'}
+                    </td>
+                    <td className="py-3 px-4 text-sm text-white">
+                      {post.publishedDate instanceof Date
+                        ? post.publishedDate.toLocaleDateString('zh-TW')
+                        : post.publishedDate}
+                    </td>
+                    <td className="py-3 px-4 text-sm text-right">
+                      <button
+                        onClick={() => handleEditPost(post)}
+                        className="text-blue-400 hover:text-blue-300 transition-colors ml-2"
+                        title="編輯文章"
+                      >
+                        <FaEdit size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleArchivePost(post)}
+                        className="text-yellow-400 hover:text-yellow-300 transition-colors ml-2"
+                        title={post.archived ? '取消典藏' : '典藏文章'}
+                      >
+                        <FaArchive size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleSetFeaturedPost(post)}
+                        className={`text-yellow-400 hover:text-yellow-300 transition-colors ml-2 ${featuredPostId === post.id ? 'text-yellow-500' : ''}`}
+                        title={featuredPostId === post.id ? '取消精選' : '設為精選'}
+                      >
+                        <FaStar size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleDeletePost(post.id)}
+                        className="text-red-400 hover:text-red-300 transition-colors ml-2"
+                        title="刪除文章"
+                      >
+                        <FaTrash size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={5} className="py-4 px-4 text-center text-white">
+                    沒有找到文章。您可以點擊上方的「新增文章」按鈕創建您的第一篇文章。
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </>
+  );
+
+  // 渲染步驟 2：文章內容
+  const renderGalleryManagement = () => (
+    <>
+      {/* Gallery action buttons */}
+      <div className="mb-8 flex justify-end">
+        <button
+          onClick={isAddingGallery ? handleGalleryCancel : () => setIsAddingGallery(true)}
+          className="kuchiki-btn flex items-center gap-2"
+        >
+          {isAddingGallery ? (
+            '取消'
+          ) : (
+            <>
+              <FaPlus size={14} />
+              <span>新增作品</span>
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* Gallery form */}
+      {isAddingGallery && renderGalleryForm()}
+
+      {/* Gallery items list */}
+      <div className="mb-8">
+        <h2 className="text-2xl font-light text-white tracking-wider mb-8">作品列表</h2>
+        
+        {galleryItems.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {galleryItems.map(item => (
+              <div 
+                key={item.id} 
+                className="bg-gray-900 bg-opacity-40 border border-gray-800 overflow-hidden"
+              >
+                <div className="aspect-w-16 aspect-h-9 relative">
+                  <img
+                    src={item.imageUrl}
+                    alt={item.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-40 transition-opacity flex items-center justify-center gap-4 opacity-0 hover:opacity-100">
+                    <button
+                      onClick={() => handleEditGallery(item)}
+                      className="p-2 bg-blue-900 text-white rounded-full"
+                    >
+                      <FaEdit size={16} />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteGallery(item.id)}
+                      className="p-2 bg-red-900 text-white rounded-full"
+                    >
+                      <FaTrash size={16} />
+                    </button>
+                  </div>
                 </div>
-
-                {/* Gallery form */}
-                {isAddingGallery && renderGalleryForm()}
-
-                {/* Gallery items list */}
-                <div className="mb-8">
-                  <h2 className="text-2xl font-light text-white tracking-wider mb-8">作品列表</h2>
-                  
-                  {galleryItems.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {galleryItems.map(item => (
-                        <div 
-                          key={item.id} 
-                          className="bg-gray-900 bg-opacity-40 border border-gray-800 overflow-hidden"
-                        >
-                          <div className="aspect-w-16 aspect-h-9 relative">
-                            <img
-                              src={item.imageUrl}
-                              alt={item.title}
-                              className="w-full h-full object-cover"
-                            />
-                            <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-40 transition-opacity flex items-center justify-center gap-4 opacity-0 hover:opacity-100">
-                              <button
-                                onClick={() => handleEditGallery(item)}
-                                className="p-2 bg-blue-900 text-white rounded-full"
-                              >
-                                <FaEdit size={16} />
-                              </button>
-                              <button
-                                onClick={() => handleDeleteGallery(item.id)}
-                                className="p-2 bg-red-900 text-white rounded-full"
-                              >
-                                <FaTrash size={16} />
-                              </button>
-                            </div>
-                          </div>
-                          <div className="p-4">
-                            <h3 className="text-lg font-light text-white">{item.title}</h3>
-                            <p className="text-sm text-white opacity-70 mt-1 whitespace-pre-line">{item.description}</p>
-                            <div className="flex justify-between items-center mt-3">
-                              <span className="text-xs text-white opacity-60">{item.date}</span>
-                              <span className="text-xs bg-gray-800 px-2 py-1 text-white opacity-80">
-                                {item.category}
-                              </span>
-                            </div>
-                            {item.url && (
-                              <div className="mt-2 text-xs text-white opacity-60">
-                                <span>作品連結: </span>
-                                <a 
-                                  href={item.url} 
-                                  target="_blank" 
-                                  rel="noreferrer"
-                                  className="underline hover:text-blue-400"
-                                >
-                                  {item.url.length > 30 ? item.url.slice(0, 30) + '...' : item.url}
-                                </a>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-12 border border-gray-800 bg-gray-900 bg-opacity-40">
-                      <FaImages size={48} className="mx-auto text-white opacity-30 mb-4" />
-                      <p className="text-white">尚無圖片。點擊「新增圖片」按鈕來添加。</p>
+                <div className="p-4">
+                  <h3 className="text-lg font-light text-white">{item.title}</h3>
+                  <p className="text-sm text-white opacity-70 mt-1 whitespace-pre-line">{item.description}</p>
+                  <div className="flex justify-between items-center mt-3">
+                    <span className="text-xs text-white opacity-60">{item.date}</span>
+                    <span className="text-xs bg-gray-800 px-2 py-1 text-white opacity-80">
+                      {item.category}
+                    </span>
+                  </div>
+                  {item.url && (
+                    <div className="mt-2 text-xs text-white opacity-60">
+                      <span>作品連結: </span>
+                      <a 
+                        href={item.url} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="underline hover:text-blue-400"
+                      >
+                        {item.url.length > 30 ? item.url.slice(0, 30) + '...' : item.url}
+                      </a>
                     </div>
                   )}
                 </div>
-              </>
-            )}
-          </>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12 border border-gray-800 bg-gray-900 bg-opacity-40">
+            <FaImages size={48} className="mx-auto text-white opacity-30 mb-4" />
+            <p className="text-white">尚無圖片。點擊「新增圖片」按鈕來添加。</p>
+          </div>
         )}
+      </div>
+    </>
+  );
+
+  // 更新側邊欄導航
+  const renderSidebar = () => (
+    <div className="w-64 bg-gray-900 bg-opacity-50 min-h-screen p-6 border-r border-gray-800">
+      <h1 className="text-xl font-light text-white mb-8 tracking-wider">管理後台</h1>
+      
+      <div className="mb-8">
+        <div className="text-sm text-white opacity-70 mb-2">已登入為</div>
+        <div className="flex items-center space-x-4">
+          <div>
+            <div className="text-white">{currentUser?.email}</div>
+          </div>
+        </div>
+        <button
+          onClick={handleLogout}
+          className="mt-2 text-sm text-red-400 hover:text-red-300"
+        >
+          登出
+        </button>
+      </div>
+      
+      <nav className="space-y-2">
+        <button
+          onClick={() => setActiveSection('blog')}
+          className={`w-full text-left py-2 px-3 rounded transition ${
+            activeSection === 'blog'
+              ? 'bg-gray-800 text-white'
+              : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+          }`}
+        >
+          文章管理
+        </button>
+        <button
+          onClick={() => setActiveSection('gallery')}
+          className={`w-full text-left py-2 px-3 rounded transition ${
+            activeSection === 'gallery'
+              ? 'bg-gray-800 text-white'
+              : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+          }`}
+        >
+          圖庫管理
+        </button>
+        <button
+          onClick={() => setActiveSection('subscribers')}
+          className={`w-full text-left py-2 px-3 rounded transition ${
+            activeSection === 'subscribers'
+              ? 'bg-gray-800 text-white'
+              : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+          }`}
+        >
+          訂閱者管理
+        </button>
+      </nav>
+    </div>
+  );
+
+  // 根據選擇的部分渲染不同內容
+  const renderContent = () => {
+    switch (activeSection) {
+      case 'blog':
+        return renderBlogManagement();
+      case 'gallery':
+        return renderGalleryManagement();
+      case 'subscribers':
+        return renderSubscriberManagement();
+      default:
+        return renderBlogManagement();
+    }
+  };
+
+  return (
+    <div className="bg-black min-h-screen kuchiki-overlay">
+      <div className="flex">
+        {renderSidebar()}
+        
+        <div className="flex-1 p-6 overflow-auto">
+          {error && (
+            <div className="bg-red-900 bg-opacity-30 border border-red-700 text-red-300 p-3 rounded mb-6">
+              {error}
+            </div>
+          )}
+          
+          {renderContent()}
+        </div>
       </div>
     </div>
   );

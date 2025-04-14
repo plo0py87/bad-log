@@ -1,15 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import BlogList from '../features/blog/components/BlogList';
 import { FaLeaf } from 'react-icons/fa';
 import { getFeaturedPost, getPostById, getRecentPosts } from '../services/blogService';
 import { BlogPost } from '../types/blog';
+import { subscribeToNewsletter } from '../services/newsletterService';
 
 export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [featuredPost, setFeaturedPost] = useState<BlogPost | null>(null);
   const [recentPosts, setRecentPosts] = useState<BlogPost[]>([]);
+
+  // 添加訂閱相關狀態
+  const [email, setEmail] = useState('');
+  const [isSubscribing, setIsSubscribing] = useState(false);
+  const [subscribeMessage, setSubscribeMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -42,6 +48,40 @@ export default function HomePage() {
     
     fetchData();
   }, []);
+
+  // 處理訂閱表單提交
+  const handleSubscribe = async (e: FormEvent) => {
+    e.preventDefault();
+    
+    // 簡單的郵箱格式驗證
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setSubscribeMessage({ text: '請輸入有效的電子郵件地址', type: 'error' });
+      return;
+    }
+    
+    setIsSubscribing(true);
+    setSubscribeMessage(null);
+    
+    try {
+      const result = await subscribeToNewsletter(email);
+      
+      if (result.success) {
+        setSubscribeMessage({ text: result.message, type: 'success' });
+        setEmail(''); // 清空表單
+      } else {
+        setSubscribeMessage({ text: result.message, type: 'error' });
+      }
+    } catch (error) {
+      console.error('訂閱時發生錯誤:', error);
+      setSubscribeMessage({ 
+        text: '訂閱時發生錯誤，請稍後再試', 
+        type: 'error' 
+      });
+    } finally {
+      setIsSubscribing(false);
+    }
+  };
 
   return (
     <div className="bg-black text-white kuchiki-overlay">
@@ -200,7 +240,10 @@ export default function HomePage() {
                   當我們發佈新文章和更新時獲得通知
                 </p>
               </div>
-              <form className="mt-8 sm:flex sm:items-center sm:justify-center">
+              <form 
+                className="mt-8 sm:flex sm:items-center sm:justify-center"
+                onSubmit={handleSubscribe}
+              >
                 <div className="min-w-0 w-full sm:max-w-xs">
                   <label htmlFor="email" className="sr-only">
                     電子郵件地址
@@ -210,17 +253,33 @@ export default function HomePage() {
                     type="email"
                     className="kuchiki-input w-full"
                     placeholder="輸入您的電子郵件"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={isSubscribing}
+                    required
                   />
                 </div>
                 <div className="mt-3 sm:mt-0 sm:ml-3">
                   <button
                     type="submit"
                     className="kuchiki-btn"
+                    disabled={isSubscribing}
                   >
-                    訂閱
+                    {isSubscribing ? '處理中...' : '訂閱'}
                   </button>
                 </div>
               </form>
+              
+              {/* 訂閱回饋訊息 */}
+              {subscribeMessage && (
+                <div className={`mt-4 text-center p-2 ${
+                  subscribeMessage.type === 'success' 
+                    ? 'text-green-400' 
+                    : 'text-red-400'
+                }`}>
+                  {subscribeMessage.text}
+                </div>
+              )}
             </div>
           </div>
         </div>

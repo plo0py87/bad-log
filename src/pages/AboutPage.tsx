@@ -190,7 +190,7 @@ export default function AboutPage() {
                   <h3 className="mb-2 text-xl font-light tracking-wider text-white">網站上線天數</h3>
                   <div className="flex justify-center mb-3">
                     <div className="segment-display">
-                    {Math.floor((new Date().getTime() - new Date('2024-04-08').getTime()) / (1000 * 60 * 60 * 24)).toString().padStart(5, '0').split('').map((digit, index) => (
+                    {Math.floor((new Date().getTime() - new Date('2025-04-08').getTime()) / (1000 * 60 * 60 * 24)).toString().padStart(5, '0').split('').map((digit, index) => (
                         <div key={index} className="segment-digit">
                           {digit}
                         </div>
