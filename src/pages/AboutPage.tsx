@@ -333,11 +333,11 @@ export default function AboutPage() {
 
               <div className="relative flex items-center justify-center">
                 <div className="w-4/5">
-                  <img
+                  {/* <img
                     src="/profile.jpg"
                     alt="個人照片"
                     className="w-full border border-gray-800 contrast-125 grayscale"
-                  />
+                  /> */}
                 </div>
               </div>
             </div>
