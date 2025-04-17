@@ -102,7 +102,7 @@ export default function GalleryPage() {
             <h1 className="text-4xl font-light tracking-wider text-white sm:text-5xl lg:text-6xl kuchiki-title">作品</h1>
             <div className="h-px w-24 bg-gradient-to-r from-transparent via-white to-transparent mx-auto mt-6 mb-6"></div>
             <p className="mt-6 max-w-3xl mx-auto text-lg text-white font-light opacity-75">
-              我還沒想到這裡要打什麼
+            "The computer is mightier than the pen."
             </p>
           </div>
         </div>

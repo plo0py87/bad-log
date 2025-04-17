@@ -4,6 +4,7 @@ import { getAllPosts, getPostById } from '../services/blogService';
 import BlogDetail from '../features/blog/components/BlogDetail';
 import BlogCard from '../features/blog/components/BlogCard';
 import { BlogPost } from '../types/blog';
+import CommentSection from '../features/blog/components/CommentSection';
 
 export default function BlogDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -135,6 +136,11 @@ export default function BlogDetailPage() {
 
       {/* Blog post */}
       <BlogDetail post={post} />
+
+      {/* Comment Section - Add this before Next in Series */}
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
+        <CommentSection postId={post.id} />
+      </div>
 
       {/* Next in Series */}
       {nextInSeries && (
