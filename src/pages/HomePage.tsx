@@ -5,6 +5,7 @@ import { FaLeaf } from 'react-icons/fa';
 import { getFeaturedPost, getPostById, getRecentPosts } from '../services/blogService';
 import { BlogPost } from '../types/blog';
 import { subscribeToNewsletter } from '../services/newsletterService';
+import FloatingDots from '../components/ui/FloatingDots';
 
 export default function HomePage() {
   const [loading, setLoading] = useState(true);
@@ -95,6 +96,19 @@ export default function HomePage() {
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black via-transparent to-black" />
         </div>
+        
+        {/* 獨立包裝的漂浮螢光點 */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 20 }}>
+          <FloatingDots 
+            count={20} 
+            minRadius={2} 
+            maxRadius={6} 
+            color="rgba(101, 255, 41, 0.9)" 
+            minSpeed={0.3}
+            maxSpeed={1.2}
+          />
+        </div>
+        
         <div className="relative max-w-7xl mx-auto py-16 px-4 sm:py-16 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="h-px w-24 bg-gradient-to-r from-transparent via-white to-transparent mx-auto mb-6"></div>

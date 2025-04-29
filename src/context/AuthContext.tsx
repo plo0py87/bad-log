@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/default
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { 
   signInWithPopup, 

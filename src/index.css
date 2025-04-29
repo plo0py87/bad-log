@@ -152,3 +152,20 @@ body {
 .prose hr {
   @apply my-8 border-gray-800;
 }
+
+/* Floating Dots Animation */
+.floating-dots-container {
+  position: relative;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.floating-dots-container canvas {
+  mix-blend-mode: screen;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 30;
+}
