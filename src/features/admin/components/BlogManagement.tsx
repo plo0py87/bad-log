@@ -38,7 +38,7 @@ const BlogManagement: React.FC<BlogManagementProps> = ({
     uploadFile, 
     uploadProgress, 
     isUploading, 
-    error: uploadError,
+    uploadError,
   } = useFirebaseUpload();
   
   // Current edited post id
