@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import * as React from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { FaLeaf, FaGoogle } from 'react-icons/fa';
 
 export default function LoginPage() {
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [error, setError] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
   const navigate = useNavigate();
   const { loginWithGoogle, currentUser, isAdmin, logout } = useAuth();
 

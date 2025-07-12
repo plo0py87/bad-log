@@ -474,10 +474,9 @@ const GalleryManagement: React.FC<GalleryManagementProps> = ({
                     alt={item.title}
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-40 transition-opacity flex items-center justify-center gap-4 opacity-0 hover:opacity-100">
-                    <button
+                  <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-40 transition-opacity flex items-center justify-center gap-4 opacity-0 hover:opacity-100">                    <button
                       onClick={() => handleEditGallery(item)}
-                      className="p-2 bg-blue-900 text-white rounded-full"
+                      className="p-2 bg-gray-800 text-white rounded-full"
                       title="編輯"
                     >
                       <FaEdit size={16} />
@@ -507,7 +506,7 @@ const GalleryManagement: React.FC<GalleryManagementProps> = ({
                         href={item.url} 
                         target="_blank" 
                         rel="noreferrer"
-                        className="underline hover:text-blue-400"
+                        className="underline hover:text-gray-300"
                       >
                         {item.url.length > 30 ? item.url.slice(0, 30) + '...' : item.url}
                       </a>

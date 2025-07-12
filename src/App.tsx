@@ -1,5 +1,5 @@
 import { RouterProvider, createHashRouter } from 'react-router-dom';
-import { useEffect } from 'react';
+import * as React from 'react';
 import Layout from './components/layout/Layout';
 import HomePage from './pages/HomePage';
 import BlogPage from './pages/BlogPage';
@@ -65,10 +65,10 @@ const router = createHashRouter([
 
 function App() {
   // Call usePageViews here to count views for any page
-  const { viewCount, loading, error } = usePageViews();
+  // const { viewCount, loading, error } = usePageViews(); // 暫時停用
   
   // Check Firebase connection
-  useEffect(() => {
+  React.useEffect(() => {
     const checkConnection = async () => {
       try {
         const connected = await checkFirebaseConnection();

@@ -1,9 +1,10 @@
-import React, { useState, useRef } from 'react';
+import * as React from 'react';
+import { useState } from 'react';
 import { FaPlus, FaEdit, FaUpload, FaArchive, FaStar, FaTrash } from 'react-icons/fa';
-import { marked } from 'marked';
 import { BlogPost } from '../../../types/blog';
 import { addPost, updatePost, deletePost, updateFeaturedPost } from '../../../services/blogService';
 import useFirebaseUpload from '../../../hooks/useFirebaseUpload';
+import TiptapEditor from '../../../components/ui/TiptapEditor';
 
 interface BlogManagementProps {
   posts: BlogPost[];
@@ -19,19 +20,14 @@ const BlogManagement: React.FC<BlogManagementProps> = ({
   featuredPostId, 
   setFeaturedPostId,
   setError 
-}) => {
-  // State for adding and editing blog posts
+}) => {  // State for adding and editing blog posts
   const [isAddingPost, setIsAddingPost] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [activeStep, setActiveStep] = useState(1);
-  const [previewMode, setPreviewMode] = useState(false);
-  const [loading, setLoading] = useState(false);
-  
-  // Image upload state and ref
-  const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const [loading, setLoading] = useState(false);  
+  // Image upload state
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imageUploadType, setImageUploadType] = useState<'cover' | 'content'>('cover');
   
   // Custom hook for Firebase uploads
   const { 
@@ -68,6 +64,10 @@ const BlogManagement: React.FC<BlogManagementProps> = ({
     }));
   };
 
+  const handleContentChange = (content: string) => {
+    setFormData(prev => ({ ...prev, content }));
+  };
+
   // Handle tag addition
   const handleAddTag = () => {
     if (tagInput.trim() && !formData.tags?.includes(tagInput.trim())) {
@@ -86,13 +86,11 @@ const BlogManagement: React.FC<BlogManagementProps> = ({
       tags: prev.tags?.filter(tag => tag !== tagToRemove) || []
     }));
   };
-
   // Generate slug from title
   const generateSlug = () => {
     const slug = formData.title
       .toLowerCase()
-      .replace(/[^\w\u4e00-\u9fa5\- ]/g, '') // 保留中文字符
-      .replace(/\s+/g, '-')
+      .replace(/[^\w\u4e00-\u9fa5\- ]/g, '') // 保留中文字符      .replace(/\s+/g, '-')
       .replace(/-+/g, '-');
 
     setFormData(prev => ({ ...prev, slug }));
@@ -162,13 +160,11 @@ const BlogManagement: React.FC<BlogManagementProps> = ({
       publishedDate: new Date(),
       category: '',
       tags: [],
-      coverImage: ''
-    });
+      coverImage: ''    });
     setIsAddingPost(false);
     setIsEditing(false);
     setCurrentPostId(null);
     setActiveStep(1);
-    setPreviewMode(false);
     setImageFile(null);
     setImagePreview(null);
   };
@@ -206,13 +202,11 @@ const BlogManagement: React.FC<BlogManagementProps> = ({
       publishedDate: post.publishedDate,
       category: post.category || '',
       tags: post.tags || [],
-      coverImage: post.coverImage || ''
-    });
+      coverImage: post.coverImage || ''    });
     setCurrentPostId(post.id);
     setIsEditing(true);
     setIsAddingPost(true);
     setActiveStep(1);
-    setPreviewMode(false);
   };
 
   // Handle post archiving
@@ -234,10 +228,10 @@ const BlogManagement: React.FC<BlogManagementProps> = ({
         ));
         setError(null);
       } else {
-        setError(`${post.archived ? '取消典藏' : '典藏'}文章時發生錯誤`);
+        setError(`${post.archived ? '取消典藏' : '典藏文章'}`);
       }
     } catch (err) {
-      setError(`${post.archived ? '取消典藏' : '典藏'}文章時發生錯誤`);
+      setError(`${post.archived ? '取消典藏' : '典藏文章'}`);
       console.error(err);
     } finally {
       setLoading(false);
@@ -292,13 +286,11 @@ const BlogManagement: React.FC<BlogManagementProps> = ({
       resetForm();
     }
   };
-
   // Handle image selection
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setImageFile(file);
-      setImageUploadType('cover');
       
       // Generate preview
       const reader = new FileReader();
@@ -324,60 +316,7 @@ const BlogManagement: React.FC<BlogManagementProps> = ({
       }
     } catch (err) {
       setError('上傳圖片時發生錯誤');
-    }
-  };
-
-  // Handle content image selection
-  const handleContentImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setImageFile(file);
-      setImageUploadType('content');
-      
-      // Upload content image
-      uploadContentImage(file);
-    }
-  };
-
-  // Upload content image and insert Markdown
-  const uploadContentImage = async (file: File) => {
-    try {
-      const downloadURL = await uploadFile(file, 'content-images');
-      
-      if (downloadURL) {
-        // Insert Markdown image syntax
-        insertImageMarkdown(downloadURL, file.name);
-      }
-    } catch (err) {
-      setError('上傳圖片時發生錯誤');
-    }
-  };
-
-  // Insert image Markdown at cursor position
-  const insertImageMarkdown = (imageUrl: string, fileName: string) => {
-    if (!contentTextareaRef.current) return;
-    
-    const textarea = contentTextareaRef.current;
-    const start = textarea.selectionStart || 0;
-    const end = textarea.selectionEnd || 0;
-    const markdownImage = `![${fileName}](${imageUrl})`;
-    
-    // Get current content and insert image Markdown at cursor position
-    const content = textarea.value;
-    const newContent = content.substring(0, start) + markdownImage + content.substring(end);
-    
-    // Update form content
-    setFormData(prev => ({
-      ...prev,
-      content: newContent
-    }));
-    
-    // Reset cursor position after insertion
-    setTimeout(() => {
-      textarea.focus();
-      textarea.setSelectionRange(start + markdownImage.length, start + markdownImage.length);
-    }, 0);
-  };
+    }  };
 
   // Render step 1: Basic info
   const renderStep1 = () => (
@@ -588,8 +527,7 @@ const BlogManagement: React.FC<BlogManagementProps> = ({
         >
           下一步：編寫內容
         </button>
-      </div>
-    </div>
+      </div>    </div>
   );
 
   // Render step 2: Article content
@@ -597,65 +535,16 @@ const BlogManagement: React.FC<BlogManagementProps> = ({
     <div className="space-y-6">
       <div className="flex justify-between mb-2">
         <label className="block text-sm font-light text-white mb-1 tracking-wider">
-          文章內容 (支持 Markdown)
-        </label>
-        <div className="flex space-x-2">
-          {/* 添加插入圖片按鈕 */}
-          {!previewMode && (
-            <div className="relative">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleContentImageSelect}
-                className="hidden"
-                id="content-image-upload"
-              />
-              <label 
-                htmlFor="content-image-upload"
-                className="kuchiki-btn cursor-pointer flex items-center gap-2"
-              >
-                <FaUpload size={14} />
-                <span>插入圖片</span>
-              </label>
-            </div>
-          )}
-          <button
-            type="button"
-            onClick={() => setPreviewMode(!previewMode)}
-            className="text-sm underline text-white opacity-80 hover:opacity-100"
-          >
-            {previewMode ? '返回編輯' : '預覽'}
-          </button>
-        </div>
+          文章內容        </label>
+      </div>      <div className="relative">
+        <TiptapEditor
+          content={formData.content}
+          onChange={handleContentChange}
+          placeholder="開始編寫您的文章內容..."
+          className="min-h-[500px]"
+          onError={setError}
+        />
       </div>
-
-      {/* 顯示內容圖片上傳進度 */}
-      {isUploading && imageUploadType === 'content' && (
-        <div className="w-full bg-gray-700 mb-2">
-          <div 
-            className="bg-green-600 h-2" 
-            style={{ width: `${uploadProgress}%` }}
-          ></div>
-          <p className="text-xs text-white mt-1">上傳中: {uploadProgress}%</p>
-        </div>
-      )}
-
-      {previewMode ? (
-        <div
-          className="prose prose-invert max-w-none p-6 bg-gray-900 bg-opacity-40 border border-gray-800 min-h-[400px]"
-          dangerouslySetInnerHTML={{ __html: marked(formData.content || '') }}
-        />
-      ) : (
-        <textarea
-          name="content"
-          value={formData.content}
-          onChange={handleInputChange}
-          className="kuchiki-input w-full"
-          rows={15}
-          required
-          ref={contentTextareaRef}
-        />
-      )}
 
       <div className="flex justify-between">
         <button
@@ -739,10 +628,9 @@ const BlogManagement: React.FC<BlogManagementProps> = ({
                         ? post.publishedDate.toLocaleDateString('zh-TW')
                         : post.publishedDate}
                     </td>
-                    <td className="py-3 px-4 text-sm text-right">
-                      <button
+                    <td className="py-3 px-4 text-sm text-right">                      <button
                         onClick={() => handleEditPost(post)}
-                        className="text-blue-400 hover:text-blue-300 transition-colors ml-2"
+                        className="text-gray-400 hover:text-gray-300 transition-colors ml-2"
                         title="編輯文章"
                       >
                         <FaEdit size={16} />

@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react';
+import * as React from 'react';
 import { doc, getDoc, updateDoc, increment, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 
 export const usePageViews = () => {
-  const [viewCount, setViewCount] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [viewCount, setViewCount] = React.useState(0);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const trackPageView = async () => {
       try {
         // Reference to the document that stores our view count

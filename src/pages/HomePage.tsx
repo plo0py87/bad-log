@@ -1,4 +1,4 @@
-import { useState, useEffect, FormEvent } from 'react';
+import * as React from 'react';
 import { Link } from 'react-router-dom';
 import BlogList from '../features/blog/components/BlogList';
 import { FaLeaf } from 'react-icons/fa';
@@ -8,17 +8,17 @@ import { subscribeToNewsletter } from '../services/newsletterService';
 import FloatingDots from '../components/ui/FloatingDots';
 
 export default function HomePage() {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [featuredPost, setFeaturedPost] = useState<BlogPost | null>(null);
-  const [recentPosts, setRecentPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+  const [featuredPost, setFeaturedPost] = React.useState<BlogPost | null>(null);
+  const [recentPosts, setRecentPosts] = React.useState<BlogPost[]>([]);
 
   // 添加訂閱相關狀態
-  const [email, setEmail] = useState('');
-  const [isSubscribing, setIsSubscribing] = useState(false);
-  const [subscribeMessage, setSubscribeMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const [email, setEmail] = React.useState('');
+  const [isSubscribing, setIsSubscribing] = React.useState(false);
+  const [subscribeMessage, setSubscribeMessage] = React.useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
-  useEffect(() => {
+  React.useEffect(() => {
     async function fetchData() {
       try {
         setLoading(true);
@@ -51,7 +51,7 @@ export default function HomePage() {
   }, []);
 
   // 處理訂閱表單提交
-  const handleSubscribe = async (e: FormEvent) => {
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // 簡單的郵箱格式驗證

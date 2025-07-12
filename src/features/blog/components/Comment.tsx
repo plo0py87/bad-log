@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { Comment } from '../../../services/commentService';
 import { FaTrash } from 'react-icons/fa';
 import { formatDistanceToNow } from 'date-fns';

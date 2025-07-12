@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import * as React from 'react';
 import { FiMaximize2, FiX, FiChevronLeft, FiChevronRight, FiExternalLink } from 'react-icons/fi';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -15,15 +15,15 @@ interface GalleryItem {
 }
 
 export default function GalleryPage() {
-  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState('全部');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeImage, setActiveImage] = useState<GalleryItem | null>(null);
+  const [galleryItems, setGalleryItems] = React.useState<GalleryItem[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = React.useState('全部');
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [activeImage, setActiveImage] = React.useState<GalleryItem | null>(null);
   
   // Fetch gallery items from Firebase
-  useEffect(() => {
+  React.useEffect(() => {
     async function fetchGalleryItems() {
       try {
         setLoading(true);

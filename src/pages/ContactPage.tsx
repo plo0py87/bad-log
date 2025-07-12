@@ -1,21 +1,21 @@
-import { useState } from 'react';
+import * as React from 'react';
 import { FaLeaf } from 'react-icons/fa';
 
 export default function ContactPage() {
-  const [formState, setFormState] = useState({
+  const [formState, setFormState] = React.useState({
     name: '',
     email: '',
     subject: '',
     message: ''
   });
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [isSubmitted, setIsSubmitted] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormState(prev => ({
+    setFormState((prev: any) => ({
       ...prev,
       [name]: value
     }));

@@ -1,5 +1,5 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import * as React from 'react';
 import { getAllPosts, getPostById } from '../services/blogService';
 import BlogDetail from '../features/blog/components/BlogDetail';
 import BlogCard from '../features/blog/components/BlogCard';
@@ -10,14 +10,14 @@ export default function BlogDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const [post, setPost] = useState<BlogPost | null>(null);
-  const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([]);
-  const [nextInSeries, setNextInSeries] = useState<BlogPost | null>(null); // Add this state
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [post, setPost] = React.useState<BlogPost | null>(null);
+  const [relatedPosts, setRelatedPosts] = React.useState<BlogPost[]>([]);
+  const [nextInSeries, setNextInSeries] = React.useState<BlogPost | null>(null); // Add this state
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
 
   // 載入文章和相關文章
-  useEffect(() => {
+  React.useEffect(() => {
     const fetchData = async () => {
       if (!id) return;
 
@@ -176,7 +176,7 @@ export default function BlogDetailPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16">
           <h2 className="text-2xl font-light text-white mb-8 tracking-wider">相關文章</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {relatedPosts.map(relatedPost => (
+            {relatedPosts.map((relatedPost: BlogPost) => (
               <BlogCard
                 key={relatedPost.id}
                 id={relatedPost.id}

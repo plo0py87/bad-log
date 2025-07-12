@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import * as React from 'react';
 import { format } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
 import { marked } from 'marked';
@@ -14,7 +14,7 @@ export default function BlogDetail({ post }: BlogDetailProps) {
     : format(post.publishedDate, 'yyyy年MM月dd日', { locale: zhTW });
 
   // Set up marked to render content as HTML
-  useEffect(() => {
+  React.useEffect(() => {
     marked.setOptions({
       breaks: true,
       gfm: true

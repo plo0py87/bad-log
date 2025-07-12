@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import * as React from 'react';
 
 interface FloatingDotsProps {
   count?: number;
@@ -38,16 +38,16 @@ export default function FloatingDots({
   maxSpeed = 1.5,
   containerClassName = '',
 }: FloatingDotsProps) {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const particlesRef = useRef<Particle[]>([]);
-  const animationFrameRef = useRef<number | null>(null);
-  const [mousePosition, setMousePosition] = useState<{ x: number; y: number } | null>(null);
-  const lastMouseMoveRef = useRef<number>(Date.now());
-  const idleThresholdRef = useRef<number>(2000); // 2秒無動作視為閒置
+  const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
+  const containerRef = React.useRef<HTMLDivElement | null>(null);
+  const particlesRef = React.useRef<Particle[]>([]);
+  const animationFrameRef = React.useRef<number | null>(null);
+  const [mousePosition, setMousePosition] = React.useState<{ x: number; y: number } | null>(null);
+  const lastMouseMoveRef = React.useRef<number>(Date.now());
+  const idleThresholdRef = React.useRef<number>(2000); // 2秒無動作視為閒置
 
   // Initialize particles
-  useEffect(() => {
+  React.useEffect(() => {
     const canvas = canvasRef.current;
     const container = containerRef.current;
     if (!canvas || !container) return;
@@ -108,11 +108,10 @@ export default function FloatingDots({
     window.addEventListener('resize', handleResize);
     return () => {
       window.removeEventListener('resize', handleResize);
-    };
-  }, [count, color, minRadius, maxRadius, minSpeed, maxSpeed]);
+    };  }, [count, color, minRadius, maxRadius, minSpeed, maxSpeed]);
 
   // 設置動畫
-  useEffect(() => {
+  React.useEffect(() => {
     const canvas = canvasRef.current;
     const container = containerRef.current;
     if (!canvas || !container) return;
@@ -248,11 +247,10 @@ export default function FloatingDots({
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
-    };
-  }, [mousePosition, color]);
+    };  }, [mousePosition, color]);
 
   // 處理鼠標事件
-  useEffect(() => {
+  React.useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
