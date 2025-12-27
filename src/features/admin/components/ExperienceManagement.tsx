@@ -48,6 +48,7 @@ export default function ExperienceManagement() {
                 duration: formData.duration || '',
                 description: formData.description || '',
                 type: (formData.type as any) || 'work',
+                color: formData.color || 'emerald',
                 order: experiences.length + 1
             });
         }
@@ -67,7 +68,7 @@ export default function ExperienceManagement() {
             <div className="flex justify-between items-center">
                 <h2 className="text-xl font-bold text-white">Experience Management</h2>
                 <button
-                    onClick={() => { setEditingId('new'); setFormData({ type: 'work' }); }}
+                    onClick={() => { setEditingId('new'); setFormData({ type: 'work', color: 'emerald' }); }}
                     className="flex items-center gap-2 px-4 py-2 bg-emerald-600 rounded hover:bg-emerald-700 transition"
                 >
                     <FiPlus /> New Experience
@@ -113,6 +114,23 @@ export default function ExperienceManagement() {
                                 <option value="education">Education</option>
                                 <option value="work">Work</option>
                                 <option value="activity">Activity</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm text-gray-400 mb-1">Color</label>
+                            <select
+                                value={formData.color || 'emerald'}
+                                onChange={e => setFormData({ ...formData, color: e.target.value })}
+                                className="w-full bg-black/50 border border-white/10 rounded p-2 text-white"
+                            >
+                                <option value="emerald">Emerald</option>
+                                <option value="yellow">Yellow</option>
+                                <option value="red">Red</option>
+                                <option value="blue">Blue</option>
+                                <option value="indigo">Indigo</option>
+                                <option value="purple">Purple</option>
+                                <option value="pink">Pink</option>
+                                <option value="orange">Orange</option>
                             </select>
                         </div>
                         <div className="md:col-span-2">

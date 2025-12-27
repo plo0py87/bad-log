@@ -21,6 +21,7 @@ export interface Experience {
     description: string;
     type: 'education' | 'work' | 'activity';
     order: number;
+    color?: string;
 }
 
 export interface SkillCategory {
