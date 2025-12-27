@@ -7,6 +7,22 @@ import { db } from '../firebase';
 import { FaLeaf } from 'react-icons/fa';
 import AsciiBackground from '../components/ui/AsciiBackground';
 
+// Safe color lookup to prevent Tailwind purging
+const COLOR_VARIANTS: Record<string, {
+    title: string;
+    marker: string;
+    infoTitle: string;
+}> = {
+    emerald: { title: 'text-emerald-300', marker: 'marker:text-emerald-500', infoTitle: 'text-emerald-400' },
+    yellow: { title: 'text-yellow-300', marker: 'marker:text-yellow-500', infoTitle: 'text-yellow-400' },
+    red: { title: 'text-red-300', marker: 'marker:text-red-500', infoTitle: 'text-red-400' },
+    blue: { title: 'text-blue-300', marker: 'marker:text-blue-500', infoTitle: 'text-blue-400' },
+    indigo: { title: 'text-indigo-300', marker: 'marker:text-indigo-500', infoTitle: 'text-indigo-400' },
+    purple: { title: 'text-purple-300', marker: 'marker:text-purple-500', infoTitle: 'text-purple-400' },
+    pink: { title: 'text-pink-300', marker: 'marker:text-pink-500', infoTitle: 'text-pink-400' },
+    orange: { title: 'text-orange-300', marker: 'marker:text-orange-500', infoTitle: 'text-orange-400' },
+};
+
 export default function AsciiHomePage() {
     // Dashboard Stats
     const { viewCount, loading: statsLoading, error: statsError } = usePageViews();
@@ -60,14 +76,17 @@ export default function AsciiHomePage() {
 
                 {/* Info Columns */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-12 w-full text-white/80 max-w-7xl">
-                    {homeInfos.length > 0 ? homeInfos.map((info) => (
-                        <div key={info.id} className="space-y-4 backdrop-blur-sm bg-black/20 p-6 rounded-lg border border-white/5 hover:bg-black/40 transition-colors">
-                            <h3 className={`text-xl font-light text-${info.accentColor}-400${info.accentColor === 'yellow' || info.accentColor === 'red' ? '/80' : ''} tracking-wider`}>{info.title}</h3>
-                            <p className="text-sm leading-relaxed font-light text-gray-300 whitespace-pre-line">
-                                {info.content}
-                            </p>
-                        </div>
-                    )) : (
+                    {homeInfos.length > 0 ? homeInfos.map((info) => {
+                        const colors = COLOR_VARIANTS[info.accentColor] || COLOR_VARIANTS['emerald'];
+                        return (
+                            <div key={info.id} className="space-y-4 backdrop-blur-sm bg-black/20 p-6 rounded-lg border border-white/5 hover:bg-black/40 transition-colors">
+                                <h3 className={`text-xl font-light ${colors.infoTitle} tracking-wider`}>{info.title}</h3>
+                                <p className="text-sm leading-relaxed font-light text-gray-300 whitespace-pre-line">
+                                    {info.content}
+                                </p>
+                            </div>
+                        )
+                    }) : (
                         // Fallback/Default Content if no data loaded yet (prevents flicker of empty space before data comes in if initialized)
                         <>
                             <div className="space-y-4 backdrop-blur-sm bg-black/20 p-6 rounded-lg border border-white/5 hover:bg-black/40 transition-colors">
@@ -121,18 +140,21 @@ export default function AsciiHomePage() {
                         <div className="space-y-8">
                             <h2 className="text-2xl font-light text-white tracking-widest mb-8 border-b border-white/10 pb-4">Skills & Interests</h2>
 
-                            {skills.map((skill) => (
-                                <div key={skill.id} className="backdrop-blur-sm bg-white/5 border border-white/5 p-6 rounded-lg">
-                                    <h3 className={`text-lg text-${skill.color}-300 font-light mb-4 flex items-center gap-2`}>
-                                        {skill.category.includes('Interest') && <FaLeaf />} {skill.category}
-                                    </h3>
-                                    <ul className={`grid ${skill.items.length > 4 ? 'grid-cols-2' : 'grid-cols-1'} gap-2 text-sm text-gray-300 font-light pl-4 list-disc marker:text-${skill.color}-500`}>
-                                        {skill.items.map(item => (
-                                            <li key={item}>{item}</li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            ))}
+                            {skills.map((skill) => {
+                                const colors = COLOR_VARIANTS[skill.color] || COLOR_VARIANTS['emerald'];
+                                return (
+                                    <div key={skill.id} className="backdrop-blur-sm bg-white/5 border border-white/5 p-6 rounded-lg">
+                                        <h3 className={`text-lg ${colors.title} font-light mb-4 flex items-center gap-2`}>
+                                            {skill.category.includes('Interest') && <FaLeaf />} {skill.category}
+                                        </h3>
+                                        <ul className={`grid ${skill.items.length > 4 ? 'grid-cols-2' : 'grid-cols-1'} gap-2 text-sm text-gray-300 font-light pl-4 list-disc ${colors.marker}`}>
+                                            {skill.items.map(item => (
+                                                <li key={item}>{item}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )
+                            })}
                         </div>
 
                         {/* Experience */}

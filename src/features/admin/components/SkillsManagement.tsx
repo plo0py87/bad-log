@@ -72,12 +72,21 @@ export default function SkillsManagement() {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm text-gray-400 mb-1">Color (Tailwind class prefix, e.g. emerald, yellow)</label>
-                            <input
-                                value={formData.color || ''}
+                            <label className="block text-sm text-gray-400 mb-1">Color</label>
+                            <select
+                                value={formData.color || 'emerald'}
                                 onChange={e => setFormData({ ...formData, color: e.target.value })}
                                 className="w-full bg-black/50 border border-white/10 rounded p-2 text-white"
-                            />
+                            >
+                                <option value="emerald">Emerald</option>
+                                <option value="yellow">Yellow</option>
+                                <option value="red">Red</option>
+                                <option value="blue">Blue</option>
+                                <option value="indigo">Indigo</option>
+                                <option value="purple">Purple</option>
+                                <option value="pink">Pink</option>
+                                <option value="orange">Orange</option>
+                            </select>
                         </div>
                     </div>
                     <div className="flex gap-4 mt-4 justify-end">

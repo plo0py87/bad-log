@@ -24,8 +24,13 @@ export default function ContentManagement() {
     }, []);
 
     const handleInfoSave = async (id: string, data: HomeInfo) => {
-        await updateHomeInfo(id, data);
-        alert('Saved!');
+        try {
+            await updateHomeInfo(id, data);
+            alert('內容已儲存！');
+        } catch (err) {
+            console.error(err);
+            alert('儲存失敗');
+        }
     };
 
     const handleInterestSave = async () => {
@@ -35,7 +40,7 @@ export default function ContentManagement() {
     };
 
     const handleInitDefaults = async () => {
-        if (confirm("This will initialize default content if missing. Continue?")) {
+        if (confirm("這將會初始化預設內容（如果缺少的話）。確定嗎？")) {
             await initializeDefaultContent();
             loadData();
         }
