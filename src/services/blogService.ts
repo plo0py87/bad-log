@@ -17,7 +17,7 @@ import {
   limit  // Add this import
 } from 'firebase/firestore';
 import { db } from '../firebase';
-import { BlogPost} from '../types/blog';
+import { BlogPost } from '../types/blog';
 import { getDownloadURL, getStorage, ref, uploadBytes } from 'firebase/storage';
 
 // 整合本地數據和 Firebase 數據
@@ -69,7 +69,7 @@ const convertFirestoreDocToPost = (doc: DocumentData): BlogPost => {
 export const getAllPosts = async (): Promise<BlogPost[]> => {
   // 如果使用本地模式，直接返回本地數據
   if (useLocalMode) {
-    return localBlogPosts;
+    return localBlogPosts.filter(post => !post.archived);
   }
 
   try {
@@ -79,15 +79,17 @@ export const getAllPosts = async (): Promise<BlogPost[]> => {
     // 如果 Firestore 中沒有數據，使用本地數據
     if (postsSnapshot.empty) {
       console.log('Firestore 中沒有數據，使用本地數據');
-      return localBlogPosts;
+      return localBlogPosts.filter(post => !post.archived);
     }
 
-    return postsSnapshot.docs.map(doc => convertFirestoreDocToPost(doc));
+    return postsSnapshot.docs
+      .map(doc => convertFirestoreDocToPost(doc))
+      .filter(post => !post.archived);
   } catch (error) {
     console.error('Error getting blog posts:', error);
     console.log('Firebase 錯誤，使用本地數據');
     // 在出錯時也使用本地數據
-    return localBlogPosts;
+    return localBlogPosts.filter(post => !post.archived);
   }
 };
 
@@ -209,7 +211,7 @@ export const uploadImage = async (file: File): Promise<string | null> => {
 export const getPostsByCategory = async (category: string): Promise<BlogPost[]> => {
   // 如果使用本地模式，從本地數據中過濾
   if (useLocalMode) {
-    return localBlogPosts.filter(post => post.category === category);
+    return localBlogPosts.filter(post => post.category === category && !post.archived);
   }
 
   try {
@@ -219,11 +221,13 @@ export const getPostsByCategory = async (category: string): Promise<BlogPost[]> 
       orderBy('publishedDate', 'desc')
     );
     const postsSnapshot = await getDocs(postsQuery);
-    return postsSnapshot.docs.map(doc => convertFirestoreDocToPost(doc));
+    return postsSnapshot.docs
+      .map(doc => convertFirestoreDocToPost(doc))
+      .filter(post => !post.archived);
   } catch (error) {
     console.error(`Error getting posts by category ${category}:`, error);
     // 出錯時從本地數據中過濾
-    return localBlogPosts.filter(post => post.category === category);
+    return localBlogPosts.filter(post => post.category === category && !post.archived);
   }
 };
 
@@ -264,7 +268,7 @@ export const getFeaturedPost = async () => {
   try {
     const docRef = doc(db, "statistics", "featured");
     const docSnap = await getDoc(docRef);
-    
+
     if (docSnap.exists()) {
       return docSnap.data();
     } else {
@@ -280,20 +284,20 @@ export const getFeaturedPost = async () => {
 export const updateFeaturedPost = async (postId: string | null) => {
   try {
     const featuredRef = doc(db, "statistics", "featured");
-    
+
     if (postId) {
-      await setDoc(featuredRef, { 
+      await setDoc(featuredRef, {
         postId: postId,
         updatedAt: new Date()
       });
     } else {
       // If postId is null, we're removing the featured status
-      await setDoc(featuredRef, { 
+      await setDoc(featuredRef, {
         postId: null,
         updatedAt: new Date()
       });
     }
-    
+
     return true;
   } catch (error) {
     console.error("Error updating featured post:", error);
@@ -305,7 +309,7 @@ export const getRecentPosts = async (limitCount = 3, excludeId: string | null = 
   try {
     // Request more posts initially to account for filtering
     const requestLimit = excludeId ? limitCount + 2 : limitCount + 1;
-    
+
     const q = query(
       collection(db, "blog_posts"),
       where("archived", "!=", true),
@@ -321,12 +325,12 @@ export const getRecentPosts = async (limitCount = 3, excludeId: string | null = 
         posts.push(convertFirestoreDocToPost(doc));
       }
     });
-    
+
     // Ensure we only return exactly the number requested
     if (posts.length > limitCount) {
       posts = posts.slice(0, limitCount);
     }
-    
+
     return posts;
   } catch (error) {
     console.error("Error getting recent posts:", error);

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { doc, getDoc, updateDoc, increment, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, setDoc, increment, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 
 export const usePageViews = () => {
@@ -12,14 +12,12 @@ export const usePageViews = () => {
       try {
         // Reference to the document that stores our view count
         const viewsDocRef = doc(db, 'statistics', 'pageViews');
-        
+
         // Check if this visit was already counted in this session
         const sessionCounted = sessionStorage.getItem('viewCounted');
         if (!sessionCounted) {
-          // Increment the view count
-          await updateDoc(viewsDocRef, {
-            count: increment(1)
-          });
+          // Increment the view count safely (creates doc if missing)
+          await setDoc(viewsDocRef, { count: increment(1) }, { merge: true });
           // Mark this session as counted
           sessionStorage.setItem('viewCounted', 'true');
         }
@@ -49,7 +47,7 @@ export const usePageViews = () => {
       console.error('Error listening to view count:', err);
       setError('無法監聽瀏覽次數更新');
     });
-    
+
     // Clean up the listener
     return () => unsubscribe();
   }, []);

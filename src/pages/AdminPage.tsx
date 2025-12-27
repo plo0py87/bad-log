@@ -1,8 +1,8 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
-import { 
-  getAllPosts, 
+import {
+  getAllPosts,
   initializeFirebaseData,
-  getFeaturedPost 
+  getFeaturedPost
 } from '../services/blogService';
 import { getAllGalleryItems } from '../services/galleryService';
 import { getAllSubscribers, NewsletterSubscriber } from '../services/newsletterService';
@@ -14,6 +14,9 @@ import { BlogPost } from '../types/blog';
 const BlogManagement = lazy(() => import('../features/admin/components/BlogManagement'));
 const GalleryManagement = lazy(() => import('../features/admin/components/GalleryManagement'));
 const SubscriberManagement = lazy(() => import('../features/admin/components/SubscriberManagement'));
+const ExperienceManagement = lazy(() => import('../features/admin/components/ExperienceManagement'));
+const SkillsManagement = lazy(() => import('../features/admin/components/SkillsManagement'));
+const ContentManagement = lazy(() => import('../features/admin/components/ContentManagement'));
 
 // 載入中的顯示組件
 const LoadingComponent = () => (
@@ -28,7 +31,7 @@ export default function AdminPage() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [featuredPostId, setFeaturedPostId] = useState<string | null>(null);
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
-  const [activeSection, setActiveSection] = useState<'blog' | 'gallery' | 'subscribers'>('blog');
+  const [activeSection, setActiveSection] = useState<'blog' | 'gallery' | 'subscribers' | 'experience' | 'skills' | 'content'>('blog');
   const [subscribers, setSubscribers] = useState<NewsletterSubscriber[]>([]);
   const [isLoadingSubscribers, setIsLoadingSubscribers] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -47,7 +50,7 @@ export default function AdminPage() {
         // 獲取所有文章
         const fetchedPosts = await getAllPosts();
         setPosts(fetchedPosts);
-        
+
         // 獲取精選文章 ID
         const featured = await getFeaturedPost();
         setFeaturedPostId(featured?.postId || null);
@@ -98,7 +101,7 @@ export default function AdminPage() {
   }, [activeSection]);
 
   // 切換選項時在手機模式下自動關閉側邊欄
-  const handleSectionChange = (section: 'blog' | 'gallery' | 'subscribers') => {
+  const handleSectionChange = (section: 'blog' | 'gallery' | 'subscribers' | 'experience' | 'skills' | 'content') => {
     setActiveSection(section);
     if (window.innerWidth < 768) {
       setIsSidebarOpen(false);
@@ -109,7 +112,7 @@ export default function AdminPage() {
   const renderSidebar = () => (
     <div className={`fixed md:static top-0 left-0 h-full z-20 w-64 bg-gray-900 bg-opacity-50 min-h-screen p-6 border-r border-gray-800 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
       <h1 className="text-xl font-light text-white mb-8 tracking-wider">管理後台</h1>
-      
+
       <div className="mb-8">
         <div className="text-sm text-white opacity-70 mb-2">已登入為</div>
         <div className="flex items-center space-x-4">
@@ -124,35 +127,59 @@ export default function AdminPage() {
           登出
         </button>
       </div>
-      
+
       <nav className="space-y-2">
         <button
           onClick={() => handleSectionChange('blog')}
-          className={`w-full text-left py-2 px-3 rounded transition ${
-            activeSection === 'blog'
-              ? 'bg-gray-800 text-white'
-              : 'text-gray-300 hover:bg-gray-800 hover:text-white'
-          }`}
+          className={`w-full text-left py-2 px-3 rounded transition ${activeSection === 'blog'
+            ? 'bg-gray-800 text-white'
+            : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+            }`}
         >
           文章管理
         </button>
         <button
           onClick={() => handleSectionChange('gallery')}
-          className={`w-full text-left py-2 px-3 rounded transition ${
-            activeSection === 'gallery'
-              ? 'bg-gray-800 text-white'
-              : 'text-gray-300 hover:bg-gray-800 hover:text-white'
-          }`}
+          className={`w-full text-left py-2 px-3 rounded transition ${activeSection === 'gallery'
+            ? 'bg-gray-800 text-white'
+            : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+            }`}
         >
           圖庫管理
         </button>
         <button
+          onClick={() => handleSectionChange('experience')}
+          className={`w-full text-left py-2 px-3 rounded transition ${activeSection === 'experience'
+            ? 'bg-gray-800 text-white'
+            : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+            }`}
+        >
+          經歷管理
+        </button>
+        <button
+          onClick={() => handleSectionChange('skills')}
+          className={`w-full text-left py-2 px-3 rounded transition ${activeSection === 'skills'
+            ? 'bg-gray-800 text-white'
+            : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+            }`}
+        >
+          技能管理
+        </button>
+        <button
+          onClick={() => handleSectionChange('content')}
+          className={`w-full text-left py-2 px-3 rounded transition ${activeSection === 'content'
+            ? 'bg-gray-800 text-white'
+            : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+            }`}
+        >
+          內容管理
+        </button>
+        <button
           onClick={() => handleSectionChange('subscribers')}
-          className={`w-full text-left py-2 px-3 rounded transition ${
-            activeSection === 'subscribers'
-              ? 'bg-gray-800 text-white'
-              : 'text-gray-300 hover:bg-gray-800 hover:text-white'
-          }`}
+          className={`w-full text-left py-2 px-3 rounded transition ${activeSection === 'subscribers'
+            ? 'bg-gray-800 text-white'
+            : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+            }`}
         >
           訂閱者管理
         </button>
@@ -170,11 +197,11 @@ export default function AdminPage() {
       case 'blog':
         return (
           <Suspense fallback={<LoadingComponent />}>
-            <BlogManagement 
-              posts={posts} 
-              setPosts={setPosts} 
-              featuredPostId={featuredPostId} 
-              setFeaturedPostId={setFeaturedPostId} 
+            <BlogManagement
+              posts={posts}
+              setPosts={setPosts}
+              featuredPostId={featuredPostId}
+              setFeaturedPostId={setFeaturedPostId}
               setError={setError}
             />
           </Suspense>
@@ -182,20 +209,38 @@ export default function AdminPage() {
       case 'gallery':
         return (
           <Suspense fallback={<LoadingComponent />}>
-            <GalleryManagement 
-              galleryItems={galleryItems} 
-              setGalleryItems={setGalleryItems} 
+            <GalleryManagement
+              galleryItems={galleryItems}
+              setGalleryItems={setGalleryItems}
               setError={setError}
             />
+          </Suspense>
+        );
+      case 'experience':
+        return (
+          <Suspense fallback={<LoadingComponent />}>
+            <ExperienceManagement />
+          </Suspense>
+        );
+      case 'skills':
+        return (
+          <Suspense fallback={<LoadingComponent />}>
+            <SkillsManagement />
+          </Suspense>
+        );
+      case 'content':
+        return (
+          <Suspense fallback={<LoadingComponent />}>
+            <ContentManagement />
           </Suspense>
         );
       case 'subscribers':
         return (
           <Suspense fallback={<LoadingComponent />}>
-            <SubscriberManagement 
-              subscribers={subscribers} 
-              setSubscribers={setSubscribers} 
-              isLoadingSubscribers={isLoadingSubscribers} 
+            <SubscriberManagement
+              subscribers={subscribers}
+              setSubscribers={setSubscribers}
+              isLoadingSubscribers={isLoadingSubscribers}
               setError={setError}
             />
           </Suspense>
@@ -227,7 +272,7 @@ export default function AdminPage() {
   // 背景遮罩 - 點擊關閉側邊欄
   const renderBackdrop = () => (
     isSidebarOpen && (
-      <div 
+      <div
         className="fixed inset-0 bg-black bg-opacity-50 z-10 md:hidden"
         onClick={() => setIsSidebarOpen(false)}
       />
@@ -240,26 +285,29 @@ export default function AdminPage() {
       {renderBackdrop()}
       <div className="flex flex-col md:flex-row">
         {renderSidebar()}
-        
+
         <div className="flex-1 p-6 overflow-auto md:ml-0 pt-16 md:pt-6">
           {error && (
             <div className="bg-red-900 bg-opacity-30 border border-red-700 text-red-300 p-3 rounded mb-6">
               {error}
             </div>
           )}
-          
+
           <div className="mb-8 flex justify-between items-center">
             <h2 className="text-2xl font-light text-white tracking-wider">
               {activeSection === 'blog' && '文章管理'}
               {activeSection === 'gallery' && '圖庫管理'}
               {activeSection === 'subscribers' && '訂閱者管理'}
+              {activeSection === 'experience' && '經歷管理'}
+              {activeSection === 'skills' && '技能管理'}
+              {activeSection === 'content' && '內容管理'}
             </h2>
             {currentUser && (
               <div className="flex items-center">
                 {currentUser.photoURL && (
-                  <img 
-                    src={currentUser.photoURL} 
-                    alt={currentUser.displayName || '管理員'} 
+                  <img
+                    src={currentUser.photoURL}
+                    alt={currentUser.displayName || '管理員'}
                     className="h-8 w-8 rounded-full mr-2"
                   />
                 )}
@@ -269,7 +317,7 @@ export default function AdminPage() {
               </div>
             )}
           </div>
-          
+
           {renderContent()}
         </div>
       </div>

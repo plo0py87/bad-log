@@ -33,11 +33,11 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: 
-    linear-gradient(90deg, 
-      transparent 5%, 
-      rgba(51, 51, 51, 0.1) 5%, 
-      rgba(51, 51, 51, 0.1) 10%, 
+  background-image:
+    linear-gradient(90deg,
+      transparent 5%,
+      rgba(51, 51, 51, 0.1) 5%,
+      rgba(51, 51, 51, 0.1) 10%,
       transparent 10%);
   background-size: 10px 100%;
   pointer-events: none;
@@ -71,14 +71,27 @@
 }
 
 @keyframes flipTop {
-  0% { transform: rotateX(0deg); }
-  100% { transform: rotateX(90deg); }
+  0% {
+    transform: rotateX(0deg);
+  }
+
+  100% {
+    transform: rotateX(90deg);
+  }
 }
 
 @keyframes flipBottom {
-  0% { transform: rotateX(-180deg); }
-  50% { transform: rotateX(-90deg); }
-  100% { transform: rotateX(0deg); }
+  0% {
+    transform: rotateX(-180deg);
+  }
+
+  50% {
+    transform: rotateX(-90deg);
+  }
+
+  100% {
+    transform: rotateX(0deg);
+  }
 }
 
 /* Add this style to the head of your document */
@@ -122,11 +135,11 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: 
-    linear-gradient(90deg, 
-      transparent 5%, 
-      rgba(51, 51, 51, 0.1) 5%, 
-      rgba(51, 51, 51, 0.1) 10%, 
+  background-image:
+    linear-gradient(90deg,
+      transparent 5%,
+      rgba(51, 51, 51, 0.1) 5%,
+      rgba(51, 51, 51, 0.1) 10%,
       transparent 10%);
   background-size: 10px 100%;
   pointer-events: none;

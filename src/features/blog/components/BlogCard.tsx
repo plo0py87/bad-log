@@ -24,26 +24,26 @@ export default function BlogCard({
     : format(publishedDate, 'yyyy年MM月dd日', { locale: zhTW });
 
   return (
-    <article className="bg-gray-900 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-800 kuchiki-card">
+    <article className="group bg-black border border-white/5 hover:border-yellow-500/30 overflow-hidden cursor-pointer transition-all duration-500 hover:shadow-[0_0_20px_rgba(234,179,8,0.1)] rounded-lg">
       {coverImage && (
-        <Link to={`/blog/${id}`} className="block h-48 overflow-hidden">
+        <Link to={`/blog/${id}`} className="block h-48 overflow-hidden relative">
           <img
             src={coverImage}
             alt={title}
-            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0"
           />
         </Link>
       )}
 
       <div className="p-6">
         {category && (
-          <span className="text-xs font-light inline-block py-1 px-2 uppercase tracking-widest text-white bg-black bg-opacity-50 mb-2 border border-gray-800">
+          <span className="text-xs font-light inline-block py-1 px-2 uppercase tracking-widest text-yellow-500/90 bg-white/5 mb-2 border border-white/10 rounded">
             {category}
           </span>
         )}
 
         <Link to={`/blog/${id}`}>
-          <h2 className="text-xl font-light text-white mb-2 hover:text-gray-300 transition-colors tracking-wider">
+          <h2 className="text-xl font-light text-white mb-2 group-hover:text-yellow-400 transition-colors tracking-wider">
             {title}
           </h2>
         </Link>

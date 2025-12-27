@@ -5,7 +5,7 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <nav className="bg-black shadow-none border-b border-gray-900">
+    <nav className="sticky top-0 z-50 bg-black/80 backdrop-blur-sm shadow-none border-b border-gray-900/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
@@ -24,9 +24,6 @@ export default function Navbar() {
             </Link>
             <Link to="/gallery" className="px-3 py-2 text-sm font-light tracking-widest text-white hover:text-gray-300 transition-colors duration-300">
               作品
-            </Link>
-            <Link to="/about" className="px-3 py-2 text-sm font-light tracking-widest text-white hover:text-gray-300 transition-colors duration-300">
-              關於
             </Link>
 
           </div>
@@ -63,11 +60,8 @@ export default function Navbar() {
             <Link to="/blog" className="block px-3 py-2 text-base font-light tracking-widest text-white hover:bg-gray-900 transition-colors duration-300">
               文章
             </Link>
-            <Link to="/gallery" className="block px-3 py-2 text-base font-light tracking-widest text-white hover:bg-gray-900 transition-colors duration-300">
+            <Link to="/gallery" className="block px-3 py-2 text-base font-light tracking-widest text-white hover:bg-white/10 transition-colors duration-300">
               作品
-            </Link>
-            <Link to="/about" className="block px-3 py-2 text-base font-light tracking-widest text-white hover:bg-gray-900 transition-colors duration-300">
-              關於
             </Link>
           </div>
         </div>

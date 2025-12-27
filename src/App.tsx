@@ -2,9 +2,11 @@ import { RouterProvider, createHashRouter } from 'react-router-dom';
 import * as React from 'react';
 import Layout from './components/layout/Layout';
 import HomePage from './pages/HomePage';
+import AsciiHomePage from './pages/AsciiHomePage';
+import TestPage from './pages/TestPage';
 import BlogPage from './pages/BlogPage';
 import BlogDetailPage from './pages/BlogDetailPage';
-import AboutPage from './pages/AboutPage';
+
 import ContactPage from './pages/ContactPage';
 import GalleryPage from './pages/GalleryPage';
 import NotFoundPage from './pages/NotFoundPage';
@@ -19,7 +21,15 @@ import ProtectedRoute from './components/ProtectedRoute';
 const router = createHashRouter([
   {
     path: '/',
+    element: <Layout><AsciiHomePage /></Layout>,
+  },
+  {
+    path: '/original',
     element: <Layout><HomePage /></Layout>,
+  },
+  {
+    path: '/test',
+    element: <Layout><TestPage /></Layout>,
   },
   {
     path: '/blog',
@@ -29,10 +39,7 @@ const router = createHashRouter([
     path: '/blog/:id',
     element: <Layout><BlogDetailPage /></Layout>,
   },
-  {
-    path: '/about',
-    element: <Layout><AboutPage /></Layout>,
-  },
+
   {
     path: '/gallery',
     element: <Layout><GalleryPage /></Layout>,
@@ -66,7 +73,7 @@ const router = createHashRouter([
 function App() {
   // Call usePageViews here to count views for any page
   // const { viewCount, loading, error } = usePageViews(); // 暫時停用
-  
+
   // Check Firebase connection
   React.useEffect(() => {
     const checkConnection = async () => {
