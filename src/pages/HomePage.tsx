@@ -80,9 +80,10 @@ const SCENES: SceneDefinition[] = [
 
 export default function HomePage() {
   // 暫時簡化狀態管理
-  // const [activeScene, setActiveScene] = React.useState<string>(SCENES[0]?.id ?? '');
-  // const sectionRefs = React.useRef<(HTMLElement | null)[]>([]);
-  // const asciiMap = useAsciiScenes(SCENES);
+  // 暫時簡化狀態管理
+  const [activeScene, setActiveScene] = React.useState<string>(SCENES[0]?.id ?? '');
+  const sectionRefs = React.useRef<(HTMLElement | null)[]>([]);
+  const asciiMap = useAsciiScenes(SCENES);
 
   React.useEffect(() => {
     if (sectionRefs.current.length === 0) {
@@ -275,7 +276,7 @@ function Hero() {
     <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-black">
       {/* 簡化版本的背景 */}
       <div className="absolute inset-0 bg-gradient-to-br from-black via-slate-950 to-emerald-950/40" />
-      
+
       {/* 使用更簡單的 FloatingDots 參數 */}
       <div className="absolute inset-0 opacity-60" aria-hidden>
         <FloatingDots
@@ -287,7 +288,7 @@ function Hero() {
           maxSpeed={0.5}
         />
       </div>
-      
+
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(38,77,58,0.18),transparent_55%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_30%,rgba(12,130,92,0.15),transparent_60%)]" />
 
@@ -345,9 +346,8 @@ function BackgroundTexture({ intensity = 'soft' }: { intensity?: 'soft' | 'dense
 
   return (
     <div
-      className={`pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,rgba(24,42,35,0.35)_1px,transparent_1px)] bg-[size:120px_120px] ${
-        opacityMap[intensity] ?? opacityMap.soft
-      }`}
+      className={`pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,rgba(24,42,35,0.35)_1px,transparent_1px)] bg-[size:120px_120px] ${opacityMap[intensity] ?? opacityMap.soft
+        }`}
       aria-hidden
     />
   );
