@@ -39,7 +39,7 @@ export default function ExperienceManagement() {
     const handleSave = async () => {
         if (!formData.title || !formData.organization) return;
 
-        if (editingId) {
+        if (editingId && editingId !== 'new') {
             await updateExperience(editingId, formData);
         } else {
             await addExperience({
